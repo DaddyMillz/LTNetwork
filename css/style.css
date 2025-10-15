@@ -520,7 +520,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-   background-image: url("/assets/images/hero.jpg");
+   background-image: url("../assets/images/hero.jpg");
   background-attachment: fixed;
   background-size: cover; 
   background-position: center;
@@ -857,6 +857,7 @@ footer {
 .service-card h4 {
   color: #000000;
   margin-bottom: 10px;
+  font-size: 1.4rem;
 }
 
 .service-card p {
