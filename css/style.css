@@ -125,7 +125,7 @@ body {
 
 /* ===== HERO ===== */
 .hero {
- background-image: url("/assets/images/hero.jpg");
+ background-image: url("../assets/images/hero.jpg");
   background-attachment: fixed;
   background-size: cover; 
   background-position: center;
@@ -283,7 +283,7 @@ footer {
 /* ===== TECHNICIAN===== */
 /* ===== TECHNICIAN PAGE ===== */
 .technician-search {
- background-image: url("/assets/images/hero.jpg");
+ background-image: url("../assets/images/hero.jpg");
   background-attachment: fixed;
   background-size: cover; 
   background-position: center;
@@ -717,12 +717,12 @@ footer {
 }
 
 .btn-edit {
-  background: #ff9800;
+  background: #000000;
   color: #fff;
 }
 
 .btn-edit:hover {
-  background: #e68900;
+  background: #3d3636;
 }
 
 /* ===== PROFILE SUMMARY ===== */
