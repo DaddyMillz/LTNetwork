@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Service - Local Technician Network</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="container nav-container">
+      <h1 class="logo">Local Technician Network</h1>
+      <nav class="navbar" id="navbar">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="technicians.html">Technicians</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="auth.html">Sign Up / Login</a></li>
+          <li><a href="dashboard.html">Dashboard</a></li>
+        </ul>
+      </nav>
+      <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    </div>
+  </header>
+
+  <!-- ===== BOOKING SECTION ===== -->
+  <section class="booking">
+    <div class="container">
+      <h2 id="service-title">Book a Service</h2>
+      <p class="section-desc">Please fill out the form below to request this service. We'll connect you to a nearby technician shortly.</p>
+
+      <form id="booking-form" class="booking-form">
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" placeholder="Enter your phone number" required>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" placeholder="Enter your address or area" required>
+        </div>
+
+        <div class="form-group">
+          <label for="details">Service Details</label>
+          <textarea id="details" rows="4" placeholder="Describe your request (optional)"></textarea>
+        </div>
+
+        <button type="submit" class="btn-login">Submit Booking Request</button>
+      </form>
+    </div>
+
+    <div id="success-popup" class="success-popup hidden">
+  <div class="popup-content">
+    <h3>🎉 Booking Successful!</h3>
+    <p>Thank you for your request. A nearby technician will contact you soon.</p>
+    <button id="close-popup" class="btn-login">Close</button>
+  </div>
+</div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; 2025 Local Technician Network. All rights reserved.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

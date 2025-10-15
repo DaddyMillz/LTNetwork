@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technicians - Local Technician Network</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="container nav-container">
+      <h1 class="logo">Local Technician Network</h1>
+     <nav class="navbar" id="navbar">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="technicians.html" class="active">Technicians</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="auth.html">Sign Up / Login</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+  </ul>
+</nav>
+
+      <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    </div>
+
+  </header>
+
+  <!-- ===== SEARCH FILTER ===== -->
+  <section class="technician-search">
+    <div class="container">
+      <h2>Find Technicians</h2>
+      <form class="filter-bar">
+        <select required>
+          <option value="">Select Category</option>
+          <option value="electrical">Electrical</option>
+          <option value="plumbing">Plumbing</option>
+          <option value="mechanic">Mechanic</option>
+          <option value="ac">AC Repair</option>
+          <option value="home">Home Appliances</option>
+        </select>
+        <input type="text" placeholder="Enter location" required>
+        <button type="submit">Search</button>
+      </form>
+    </div>
+  </section>
+
+ <!-- ===== TECHNICIAN LIST ===== -->
+<section class="technicians">
+  <div class="container">
+    <h3>Available Technicians</h3>
+    <button id="reset-filter" class="btn-login" style="margin-bottom:20px;">Show All</button>
+
+    <div class="tech-grid">
+      <div class="tech-card" data-category="electrical">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Technician">
+        <h4>John Ade</h4>
+        <p class="category">Electrical Engineer</p>
+        <p class="location">📍 Lagos, Nigeria</p>
+        <p class="rating">⭐ 4.8 (120 reviews)</p>
+        <button onclick="window.location.href='technician-profile.html'">View Profile</button>
+      </div>
+
+      <div class="tech-card" data-category="plumbing">
+        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Technician">
+        <h4>Chioma Okeke</h4>
+        <p class="category">Plumber</p>
+        <p class="location">📍 Abuja, Nigeria</p>
+        <p class="rating">⭐ 4.6 (98 reviews)</p>
+        <button onclick="window.location.href='technician-profile.html'">View Profile</button>
+      </div>
+
+      <div class="tech-card" data-category="ac repair">
+        <img src="https://randomuser.me/api/portraits/men/76.jpg" alt="Technician">
+        <h4>Ahmed Musa</h4>
+        <p class="category">AC Technician</p>
+        <p class="location">📍 Ogun, Nigeria</p>
+        <p class="rating">⭐ 4.9 (67 reviews)</p>
+        <button onclick="window.location.href='technician-profile.html'">View Profile</button>
+      </div>
+
+      <div class="tech-card" data-category="mechanic">
+        <img src="https://randomuser.me/api/portraits/men/81.jpg" alt="Technician">
+        <h4>David Ekene</h4>
+        <p class="category">Auto Mechanic</p>
+        <p class="location">📍 Port Harcourt, Nigeria</p>
+        <p class="rating">⭐ 4.5 (80 reviews)</p>
+        <button onclick="window.location.href='technician-profile.html'">View Profile</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; 2025 Local Technician Network. All rights reserved.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local Technician Network</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="container nav-container">
+        <div class="logo">
+            <img src="./assets/images/logo.jpg" alt="logo">
+            <h1>Local Technician Network</h1>
+        </div>
+      
+     <nav class="navbar" id="navbar">
+  <ul>
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="technicians.html">Technicians</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="auth.html">Sign Up / Login</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+  </ul>
+</nav>
+
+      <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <h2>Find Trusted Technicians Near You</h2>
+        <p>Quickly connect with verified professionals — electricians, plumbers, mechanics, and more.</p>
+        <form class="search-bar">
+          <select required>
+            <option value="">Select Category</option>
+            <option value="electrical">Electrical</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="mechanic">Mechanic</option>
+            <option value="ac">AC Repair</option>
+            <option value="home">Home Appliances</option>
+          </select>
+          <input type="text" placeholder="Enter your location" required>
+          <button type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== POPULAR CATEGORIES ===== -->
+  <section class="categories">
+    <h3>Popular Categories</h3>
+    <div class="category-grid">
+      <div class="category-card">⚡ Electrical</div>
+      <div class="category-card">💧 Plumbing</div>
+      <div class="category-card">🚗 Mechanic</div>
+      <div class="category-card">❄️ AC Repair</div>
+      <div class="category-card">🏠 Home Appliances</div>
+      <div class="category-card">🔧 General Repairs</div>
+    </div>
+  </section>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="how-it-works">
+    <h3>How It Works</h3>
+    <div class="steps">
+      <div class="step">
+        <h4>1. Search</h4>
+        <p>Find technicians near you by service type and location.</p>
+      </div>
+      <div class="step">
+        <h4>2. Review</h4>
+        <p>Check verified profiles and see user reviews before hiring.</p>
+      </div>
+      <div class="step">
+        <h4>3. Connect</h4>
+        <p>Message or call directly and get your issue fixed fast.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== WHY CHOOSE US ===== -->
+  <section class="why-us">
+    <h3>Why Choose Us</h3>
+    <div class="why-grid">
+      <div class="why-card">
+        <h4>✅ Verified Technicians</h4>
+        <p>Every listed technician is screened to ensure trust and safety.</p>
+      </div>
+      <div class="why-card">
+        <h4>💼 Reliable Service</h4>
+        <p>We connect you to professionals who deliver quality work.</p>
+      </div>
+      <div class="why-card">
+        <h4>📍 Location-Based</h4>
+        <p>Instantly find technicians available right within your area.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; 2025 Local Technician Network. All rights reserved.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
