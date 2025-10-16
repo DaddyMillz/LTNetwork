@@ -29,6 +29,8 @@
   </header>
 
   <!-- ===== DASHBOARD ===== -->
+   <h2 id="user-greeting">Welcome back!</h2>
+
   <section class="dashboard">
     <div class="container">
       <div class="dashboard-header">
@@ -112,11 +114,21 @@
     </div>
   </section>
 
+<di class="logout-wrapper">
+  <button id="logout-btn">Logout</button>
+</div>
+    
+
+
+
   <!-- ===== FOOTER ===== -->
   <footer>
     <p>&copy; 2025 Local Technician Network. All rights reserved.</p>
   </footer>
 
-  <script src="js/main.js"></script>
+<script type="module">
+  import "./js/firebase-config.js";
+  import "./js/main.js";
+</script>
 </body>
 </html>
