@@ -40,18 +40,15 @@ if (showLogin && showSignup) {
   });
 }
 
-
 // ===== CATEGORY CLICK REDIRECT =====
 document.querySelectorAll('.category-card').forEach(card => {
   card.addEventListener('click', () => {
-    // get category name (e.g. "Electrical" or "Plumbing")
     const category = card.textContent.trim().replace(/[^\w\s]/gi, '').toLowerCase();
-    // redirect to technicians page with query parameter
     window.location.href = `technicians.html?category=${encodeURIComponent(category)}`;
   });
 });
 
-// ===== FILTER TECHNICIANS BY CATEGORY (with animation + fallback) =====
+// ===== FILTER TECHNICIANS BY CATEGORY =====
 function getQueryParam(param) {
   const params = new URLSearchParams(window.location.search);
   return params.get(param);
@@ -59,7 +56,7 @@ function getQueryParam(param) {
 
 const categoryParam = getQueryParam('category');
 if (categoryParam) {
-    const resetBtn = document.getElementById('reset-filter');
+  const resetBtn = document.getElementById('reset-filter');
   if (resetBtn) resetBtn.style.display = 'inline-block';
   const cards = document.querySelectorAll('.tech-card');
   const formattedCategory = categoryParam.toLowerCase();
@@ -79,7 +76,6 @@ if (categoryParam) {
   if (heading)
     heading.textContent = `Showing ${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)} Technicians`;
 
-  // No results message
   if (matchCount === 0) {
     const container = document.querySelector('.tech-grid');
     const msg = document.createElement('p');
@@ -101,14 +97,6 @@ if (resetBtn) {
 document.querySelectorAll('.service-card').forEach(card => {
   card.addEventListener('click', () => {
     const service = card.getAttribute('data-service');
-    window.location.href = `technicians.html?category=${encodeURIComponent(service)}`;
-  });
-});
-
-// ===== SERVICE BOOKING REDIRECT =====
-document.querySelectorAll('.service-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const service = card.getAttribute('data-service');
     window.location.href = `booking.html?service=${encodeURIComponent(service)}`;
   });
 });
@@ -123,78 +111,64 @@ if (serviceParam) {
   }
 }
 
-// ===== BOOKING FORM SUBMISSION WITH POPUP =====
-const bookingForm = document.getElementById('booking-form');
-const popup = document.getElementById('success-popup');
-const closePopup = document.getElementById('close-popup');
-
-if (bookingForm) {
-  bookingForm.addEventListener('submit', e => {
-    e.preventDefault();
-
-    // simulate booking submission
-    bookingForm.reset();
-
-    // show popup
-    popup.classList.remove('hidden');
-  });
-}
-
-if (closePopup) {
-  closePopup.addEventListener('click', () => {
-    popup.classList.add('hidden');
-    // redirect back to Services or home if desired
-    window.location.href = 'services.html';
-  });
-}
-
 /* ===== FIREBASE AUTH (Signup & Login) ===== */
 (async function authSystem() {
   if (!window.firebaseAuth || !window.firebaseDB) return;
 
   const auth = window.firebaseAuth;
   const db = window.firebaseDB;
-  const { 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    onAuthStateChanged 
-  } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
+  const { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
   const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
 
-  // ===== SIGN UP =====
-  const signupForm = document.getElementById('signup-form');
-  if (signupForm) {
-    signupForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const name = document.getElementById('signup-name').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const password = document.getElementById('signup-password').value;
+// ===== SIGN UP =====
+const signupForm = document.getElementById('signup-form');
+if (signupForm) {
+  signupForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    let name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+    // Capitalize first letter of each word
+    name = name.replace(/\b\w/g, c => c.toUpperCase());
 
-        // Save user data to Firestore
-        console.log("⚙️ Trying to save user:", name, email);
-        await addDoc(collection(db, 'users'), {
-          uid: user.uid,
-          name,
-          email,
-          role: 'user',
-          createdAt: serverTimestamp()
-        });
-console.log("✅ Firestore user saved:", name, email);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-        alert('Signup successful! Redirecting...');
-setTimeout(() => {
-  window.location.href = 'dashboard.html';
-}, 1000);
+      // Save to Firestore
+      console.log("⚙️ Saving user:", name, email);
+ // Save user data to Firestore (or update if exists)
+const { getDocs, query, where, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
+const usersRef = collection(db, "users");
+const q = query(usersRef, where("uid", "==", user.uid));
+const snapshot = await getDocs(q);
 
-      } catch (err) {
-        alert('Signup failed: ' + err.message);
-      }
-    });
-  }
+if (snapshot.empty) {
+  await addDoc(usersRef, {
+    uid: user.uid,
+    name,
+    email,
+    role: "user",
+    createdAt: serverTimestamp()
+  });
+  console.log("✅ Firestore user created:", name, email);
+} else {
+  const docRef = snapshot.docs[0].ref;
+  await updateDoc(docRef, { name });
+  console.log("🔄 Firestore user name updated:", name);
+}
+
+
+      alert('Signup successful! Redirecting...');
+      setTimeout(() => (window.location.href = 'dashboard.html'), 1000);
+
+    } catch (err) {
+      alert('Signup failed: ' + err.message);
+    }
+  });
+}
+
 
   // ===== LOGIN =====
   const loginForm = document.getElementById('login-form');
@@ -229,11 +203,9 @@ setTimeout(() => {
   const auth = window.firebaseAuth;
   const { onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
 
-  // Protect dashboard
   if (window.location.pathname.endsWith('dashboard.html')) {
     onAuthStateChanged(auth, user => {
       if (!user) {
-        // Not signed in → redirect to login
         window.location.href = 'auth.html';
       } else {
         console.log('✅ Logged in user:', user.email);
@@ -241,7 +213,6 @@ setTimeout(() => {
     });
   }
 
-  // Logout
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -252,50 +223,110 @@ setTimeout(() => {
   }
 })();
 
-/* ===== DASHBOARD GREETING ===== */
+/* ===== DASHBOARD GREETING (First Name Only) ===== */
 (async function dashboardGreeting() {
   if (!window.firebaseAuth || !window.firebaseDB) return;
 
   const auth = window.firebaseAuth;
   const db = window.firebaseDB;
   const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const { collection, query, where, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
+  const { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp } =
+    await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
 
-  const greetingEl = document.getElementById('user-greeting');
-  if (!greetingEl || !window.location.pathname.endsWith('dashboard.html')) return;
+  const greetingEl = document.getElementById("user-greeting");
+  if (!greetingEl || !window.location.pathname.endsWith("dashboard.html")) return;
 
   onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      let name = null;
+    if (!user) return;
 
-      // 1️⃣ Try fetching Firestore document
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('uid', '==', user.uid));
-      const snapshot = await getDocs(q);
+    console.log("👤 Logged in user:", user.email, "UID:", user.uid);
 
-      if (!snapshot.empty) {
-        const userData = snapshot.docs[0].data();
-        name = userData.name;
-      }
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("uid", "==", user.uid));
+    const snapshot = await getDocs(q);
 
-      // 2️⃣ Retry if not found yet (new signup)
-      if (!name) {
-        console.log("⏳ Waiting for Firestore to sync user data...");
-        setTimeout(async () => {
-          const snapshot2 = await getDocs(q);
-          if (!snapshot2.empty) {
-            const userData = snapshot2.docs[0].data();
-            greetingEl.textContent = `👋 Welcome, ${userData.name || user.email}!`;
-          } else {
-            greetingEl.textContent = `👋 Welcome, ${user.email}!`;
-          }
-        }, 2000); // Wait 2 seconds and retry
+    if (snapshot.empty) {
+      console.log("🆕 User not found in Firestore — creating record.");
+      const guessedName = user.email.split("@")[0].replace(/\b\w/g, (c) => c.toUpperCase());
+      await addDoc(collection(db, "users"), {
+        uid: user.uid,
+        name: guessedName,
+        email: user.email,
+        role: "user",
+        createdAt: serverTimestamp(),
+      });
+      greetingEl.textContent = `👋 Welcome, ${guessedName.split(" ")[0]}!`;
+    } else {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+
+      let displayName = userData.name?.trim();
+      if (!displayName) {
+        displayName = user.email.split("@")[0];
+        displayName = displayName.replace(/\b\w/g, (c) => c.toUpperCase());
+        await updateDoc(doc(db, "users", userDoc.id), { name: displayName });
       } else {
-        greetingEl.textContent = `👋 Welcome, ${name}!`;
+        displayName = displayName.replace(/\b\w/g, (c) => c.toUpperCase());
       }
+
+      // 👇 Use only the first word (first name)
+      const firstName = displayName.split(" ")[0];
+      greetingEl.textContent = `👋 Welcome, ${firstName}!`;
     }
   });
 })();
 
 
+/* ===== BOOKING FORM ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  const bookingForm = document.getElementById('booking-form');
+  if (!bookingForm) return;
 
+  bookingForm.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const name = document.getElementById('book-name').value.trim();
+    const phone = document.getElementById('book-phone').value.trim();
+    const location = document.getElementById('book-location').value.trim();
+    const details = document.getElementById('book-details').value.trim();
+    const serviceParam = new URLSearchParams(window.location.search).get('service') || 'General';
+
+    if (!name || !phone || !location) {
+      alert("Please fill in all fields before submitting.");
+      return;
+    }
+
+    try {
+      const user = window.firebaseAuth.currentUser;
+      if (!user) {
+        alert("Please log in before booking.");
+        window.location.href = "auth.html";
+        return;
+      }
+
+      console.log("✅ Auth ready. Booking allowed for:", user.email);
+
+      const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
+      const db = window.firebaseDB;
+
+      await addDoc(collection(db, "bookings"), {
+        uid: user.uid,
+        email: user.email,
+        name,
+        phone,
+        location,
+        details,
+        service: serviceParam,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+
+      console.log("✅ Booking saved successfully!");
+      bookingForm.reset();
+      document.getElementById("success-popup").classList.remove("hidden");
+    } catch (err) {
+      console.error("❌ Booking save failed:", err);
+      alert("Something went wrong while saving your booking.");
+    }
+  });
+});

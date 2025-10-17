@@ -12,9 +12,9 @@
   <header class="header">
     <div class="container nav-container">
       <div class="logo">
-            <img src="./assets/images/logo.jpg" alt="logo">
-            <h1>Local Technician Network</h1>
-        </div>
+        <img src="./assets/images/logo.jpg" alt="logo">
+        <h1>Local Technician Network</h1>
+      </div>
       <nav class="navbar" id="navbar">
         <ul>
           <li><a href="index.html">Home</a></li>
@@ -32,45 +32,41 @@
   <section class="booking">
     <div class="container">
       <h2 id="service-title">Book a Service</h2>
-      <p class="section-desc">Please fill out the form below to request this service. We'll connect you to a nearby technician shortly.</p>
+      <p class="section-desc">Please fill out the form below to request this service. We'll connect you with a nearby technician shortly.</p>
 
       <form id="booking-form" class="booking-form">
         <div class="form-group">
-          <label for="fullName">Full Name</label>
-          <input type="text" id="fullName" placeholder="Enter your full name" required>
+          <label for="book-name">Full Name</label>
+          <input type="text" id="book-name" placeholder="Enter your full name" required />
         </div>
 
         <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" placeholder="Enter your email" required>
+          <label for="book-phone">Phone Number</label>
+          <input type="tel" id="book-phone" placeholder="Enter your phone number" required />
         </div>
 
         <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" placeholder="Enter your phone number" required>
+          <label for="book-location">Location</label>
+          <input type="text" id="book-location" placeholder="Enter your address or area" required />
         </div>
 
         <div class="form-group">
-          <label for="location">Location</label>
-          <input type="text" id="location" placeholder="Enter your address or area" required>
-        </div>
-
-        <div class="form-group">
-          <label for="details">Service Details</label>
-          <textarea id="details" rows="4" placeholder="Describe your request (optional)"></textarea>
+          <label for="book-details">Service Details</label>
+          <textarea id="book-details" rows="4" placeholder="Describe your issue or request" required></textarea>
         </div>
 
         <button type="submit" class="btn-login">Submit Booking Request</button>
       </form>
     </div>
 
+    <!-- ===== SUCCESS POPUP ===== -->
     <div id="success-popup" class="success-popup hidden">
-  <div class="popup-content">
-    <h3>🎉 Booking Successful!</h3>
-    <p>Thank you for your request. A nearby technician will contact you soon.</p>
-    <button id="close-popup" class="btn-login">Close</button>
-  </div>
-</div>
+      <div class="popup-content">
+        <h3>🎉 Booking Successful!</h3>
+        <p>Thank you for your request. A nearby technician will contact you soon.</p>
+        <button id="close-popup" class="btn-login">Close</button>
+      </div>
+    </div>
   </section>
 
   <!-- ===== FOOTER ===== -->
@@ -78,9 +74,10 @@
     <p>&copy; 2025 Local Technician Network. All rights reserved.</p>
   </footer>
 
-<script type="module">
-  import "./js/firebase-config.js";
-  import "./js/main.js";
-</script>
+  <!-- ===== FIREBASE & MAIN SCRIPT ===== -->
+  <script type="module">
+    import "./js/firebase-config.js";
+    import "./js/main.js";
+  </script>
 </body>
 </html>
