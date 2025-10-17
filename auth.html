@@ -30,32 +30,45 @@
   </header>
 
   <!-- ===== AUTH SECTION ===== -->
-  <section class="auth-section">
-    <div class="auth-container">
-      <div class="auth-box" id="signup-box">
-        <h2>Create Account</h2>
-       <form id="signup-form" class="auth-form">
-  <input id="signup-name" type="text" placeholder="Full Name" required />
-  <input id="signup-email" type="email" placeholder="Email Address" required />
-  <input id="signup-password" type="password" placeholder="Password" required />
-  <button type="submit">Sign Up</button>
-</form>
+ 
+<section class="auth-section">
+  <div class="auth-container">
+    <div id="signup-box">
+      <h2>Create Account</h2>
+      <form id="signup-form">
+        <input type="text" id="signup-name" placeholder="Full Name" required />
+        <input type="email" id="signup-email" placeholder="Email" required />
+        <input type="password" id="signup-password" placeholder="Password" required />
 
-        <p>Already have an account? <a href="#" id="show-login">Login here</a></p>
-      </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="signup-role" />
+            Register as Technician
+          </label>
+        </div>
 
-      <div class="auth-box hidden" id="login-box">
-        <h2>Welcome Back</h2>
-        <form id="login-form" class="auth-form">
-  <input id="login-email" type="email" placeholder="Email Address" required />
-  <input id="login-password" type="password" placeholder="Password" required />
-  <button type="submit">Login</button>
-</form>
+        <div id="technician-fields" class="hidden">
+          <input type="text" id="signup-profession" placeholder="Your Profession (e.g. Electrician)" />
+          <input type="text" id="signup-location" placeholder="Your Location (e.g. Lagos)" />
+        </div>
 
-        <p>Don't have an account? <a href="#" id="show-signup">Sign up here</a></p>
-      </div>
+        <button type="submit" class="btn-login">Sign Up</button>
+      </form>
+      <p>Already have an account? <a href="#" id="show-login">Login</a></p>
     </div>
-  </section>
+
+    <div id="login-box" class="hidden">
+      <h2>Welcome Back</h2>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required />
+        <input type="password" id="login-password" placeholder="Password" required />
+        <button type="submit" class="btn-login">Login</button>
+      </form>
+      <p>Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+    </div>
+  </div>
+</section>
+
 
   <!-- ===== FOOTER ===== -->
   <footer>

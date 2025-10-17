@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Dashboard - Local Technician Network</title>
+  <title>Technician Dashboard - Local Technician Network</title>
   <link rel="stylesheet" href="css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- ===== DASHBOARD HEADER ===== -->
+  <!-- ===== HEADER ===== -->
   <header class="header dashboard-header">
     <div class="container nav-container">
       <div class="logo">
         <img src="./assets/images/logo.jpg" alt="logo">
-        <h1>Local Technician Network</h1>
+        <h1>Technician Panel</h1>
       </div>
+
       <nav class="navbar" id="navbar">
         <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="dashboard.html" class="active">Dashboard</a></li>
+          <li><a href="tech-dashboard.html" class="active">Dashboard</a></li>
           <li><button id="logout-btn" class="btn-logout">Logout</button></li>
         </ul>
       </nav>
+
       <div class="menu-toggle" id="menu-toggle">&#9776;</div>
     </div>
   </header>
 
-  <!-- ===== DASHBOARD MAIN ===== -->
+  <!-- ===== MAIN DASHBOARD ===== -->
   <section class="dashboard">
     <div class="container">
-      <h2 id="user-greeting">👋 Welcome!</h2>
-      <p class="section-desc">Here are your recent bookings:</p>
-      <div id="user-bookings" class="booking-list"></div>
+      <h2 id="tech-greeting">👋 Welcome, Technician!</h2>
+      <p class="section-desc">Pending service requests:</p>
+      <div id="job-list" class="booking-list"></div>
     </div>
   </section>
 
