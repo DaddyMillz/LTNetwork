@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Local Technician Network</title>
+  <link rel="stylesheet" href="css/admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="container nav-container">
+      <div class="logo">
+        <img src="./assets/images/logo.jpg" alt="logo" />
+        <h1>Admin Panel</h1>
+      </div>
+
+      <nav class="navbar" id="navbar">
+        <ul>
+          <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
+          <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+      </nav>
+
+      <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    </div>
+  </header>
+
+  <!-- ===== DASHBOARD MAIN ===== -->
+  <main class="admin-main container">
+    <h2>👋 Welcome, <span id="admin-name">Admin</span></h2>
+
+    <!-- ===== OVERVIEW CARDS ===== -->
+    <section class="overview-grid">
+      <div class="overview-card">
+        <h3>Total Users</h3>
+        <p id="total-users">0</p>
+      </div>
+      <div class="overview-card">
+        <h3>Total Technicians</h3>
+        <p id="total-technicians">0</p>
+      </div>
+      <div class="overview-card">
+        <h3>Total Bookings</h3>
+        <p id="total-bookings">0</p>
+      </div>
+      <div class="overview-card">
+        <h3>Pending Bookings</h3>
+        <p id="pending-bookings">0</p>
+      </div>
+    </section>
+
+    <!-- ===== USER MANAGEMENT ===== -->
+    <section class="admin-section">
+      <h3>Manage Users & Technicians</h3>
+      <table class="admin-table" id="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Profession</th>
+            <th>Location</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="users-list">
+          <!-- Loaded dynamically -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===== BOOKINGS MANAGEMENT ===== -->
+    <section class="admin-section">
+      <h3>Manage Bookings</h3>
+      <table class="admin-table" id="bookings-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>User</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="bookings-list">
+          <!-- Loaded dynamically -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; 2025 Local Technician Network. Admin Portal.</p>
+  </footer>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script type="module">
+    import "./js/firebase-config.js";
+    import "./js/admin.js";
+  </script>
+</body>
+</html>
