@@ -1,140 +1,240 @@
-/* =========================================
-   ADMIN DASHBOARD SCRIPT - Local Technician Network
-   ========================================= */
-console.log("✅ Admin Dashboard Script Loaded");
+/* ===============================
+   ADMIN DASHBOARD SCRIPT
+   =============================== */
+import { auth, db } from "./firebase-config.js";
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-/* ===== FIREBASE CHECK ===== */
-if (!window.firebaseAuth || !window.firebaseDB) {
-  console.error("❌ Firebase not initialized!");
-}
+/* ===== DOM ELEMENTS ===== */
+const adminNameEl = document.getElementById("admin-name");
+const logoutBtn = document.getElementById("logout-btn");
+const totalUsersEl = document.getElementById("total-users");
+const totalTechsEl = document.getElementById("total-technicians");
+const totalBookingsEl = document.getElementById("total-bookings");
+const pendingBookingsEl = document.getElementById("pending-bookings");
+const usersListEl = document.getElementById("users-list");
+const bookingsListEl = document.getElementById("bookings-list");
 
-/* ===== ADMIN AUTH GUARD ===== */
-(async function adminAuthGuard() {
-  if (!window.location.pathname.endsWith("admin-dashboard.html")) return;
-
-  const { onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const auth = window.firebaseAuth;
-  const db = window.firebaseDB;
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("Please log in as admin to continue.");
-      window.location.href = "auth.html";
-      return;
-    }
-
-    // Define your admin list here
-    const adminEmails = ["admin@localtech.com", "superadmin@gmail.com"];
-    if (!adminEmails.includes(user.email)) {
-      alert("Access denied. Admins only.");
-      await signOut(auth);
-      window.location.href = "auth.html";
-      return;
-    }
-
-    document.getElementById("admin-name").textContent =
-      user.email.split("@")[0].replace(/\b\w/g, (c) => c.toUpperCase());
-    console.log("👑 Admin logged in:", user.email);
-
-    // Load dashboard data
-    await loadAdminOverview(db);
-    await loadUsers(db);
-    await loadBookings(db);
-  });
-
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      alert("You have been logged out.");
-      window.location.href = "auth.html";
-    });
+/* ===============================
+   AUTHENTICATION & ACCESS CONTROL
+   =============================== */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("Access denied. Please log in as an admin.");
+    window.location.href = "auth.html";
+    return;
   }
-})();
 
-/* ===== LOAD DASHBOARD DATA ===== */
-async function loadAdminOverview(db) {
-  const { getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("uid", "==", user.uid));
+  const snapshot = await getDocs(q);
 
-  const usersSnap = await getDocs(collection(db, "users"));
-  const bookingsSnap = await getDocs(collection(db, "bookings"));
+  if (snapshot.empty || snapshot.docs[0].data().role !== "admin") {
+    alert("Access restricted. Admins only.");
+    window.location.href = "dashboard.html";
+    return;
+  }
 
-  const totalUsers = usersSnap.size;
-  const totalTechs = usersSnap.docs.filter((d) => d.data().role === "technician").length;
-  const totalBookings = bookingsSnap.size;
-  const pendingBookings = bookingsSnap.docs.filter((d) => d.data().status === "pending").length;
+  const adminData = snapshot.docs[0].data();
+  adminNameEl.textContent = adminData.name || "Admin";
+  console.log("👑 Admin logged in:", adminData.email);
 
-  document.getElementById("total-users").textContent = totalUsers;
-  document.getElementById("total-technicians").textContent = totalTechs;
-  document.getElementById("total-bookings").textContent = totalBookings;
-  document.getElementById("pending-bookings").textContent = pendingBookings;
-}
+  // Load dashboard data
+  loadOverviewStats();
+  loadUsers();
+  loadBookings();
+});
 
-/* ===== LOAD USERS ===== */
-async function loadUsers(db) {
-  const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-  const usersSnap = await getDocs(collection(db, "users"));
-  const usersList = document.getElementById("users-list");
-  usersList.innerHTML = "";
-
-  usersSnap.forEach((doc) => {
-    const u = doc.data();
-    usersList.innerHTML += `
-      <tr>
-        <td>${u.name || "N/A"}</td>
-        <td>${u.email}</td>
-        <td>${u.role}</td>
-        <td>${u.profession || "-"}</td>
-        <td>${u.location?.city || "Unknown"}</td>
-        <td><button class="delete-btn" data-id="${doc.id}">Delete</button></td>
-      </tr>`;
+/* ===============================
+   LOGOUT FUNCTIONALITY
+   =============================== */
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    alert("Logged out successfully.");
+    window.location.href = "auth.html";
   });
-
-  document.querySelectorAll(".delete-btn").forEach((btn) =>
-    btn.addEventListener("click", () => deleteUser(db, btn.dataset.id))
-  );
 }
 
-/* ===== LOAD BOOKINGS ===== */
-async function loadBookings(db) {
-  const { getDocs, collection, updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-  const bookingsSnap = await getDocs(collection(db, "bookings"));
-  const bookingsList = document.getElementById("bookings-list");
-  bookingsList.innerHTML = "";
+/* ===============================
+   LOAD OVERVIEW STATISTICS
+   =============================== */
+async function loadOverviewStats() {
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    const bookingsSnap = await getDocs(collection(db, "bookings"));
 
-  bookingsSnap.forEach((docItem) => {
-    const b = docItem.data();
-    bookingsList.innerHTML += `
-      <tr>
-        <td>${b.service}</td>
-        <td>${b.email}</td>
-        <td>${b.location}</td>
-        <td>${b.status}</td>
+    const totalUsers = usersSnap.size;
+    const totalTechs = usersSnap.docs.filter(
+      (doc) => doc.data().role === "technician"
+    ).length;
+    const totalBookings = bookingsSnap.size;
+    const pendingBookings = bookingsSnap.docs.filter(
+      (doc) => doc.data().status === "pending"
+    ).length;
+
+    totalUsersEl.textContent = totalUsers;
+    totalTechsEl.textContent = totalTechs;
+    totalBookingsEl.textContent = totalBookings;
+    pendingBookingsEl.textContent = pendingBookings;
+  } catch (err) {
+    console.error("❌ Failed to load overview stats:", err);
+  }
+}
+
+/* ===============================
+   LOAD USERS TABLE
+   =============================== */
+async function loadUsers() {
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    usersListEl.innerHTML = "";
+
+    usersSnap.forEach((docSnap) => {
+      const user = docSnap.data();
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${user.name || "N/A"}</td>
+        <td>${user.email}</td>
+        <td>${user.role}</td>
+        <td>${user.profession || "-"}</td>
+        <td>${user.location?.city || "Unknown"}</td>
         <td>
-          <select data-id="${docItem.id}" class="status-select">
-            <option value="pending" ${b.status === "pending" ? "selected" : ""}>Pending</option>
-            <option value="in-progress" ${b.status === "in-progress" ? "selected" : ""}>In Progress</option>
-            <option value="completed" ${b.status === "completed" ? "selected" : ""}>Completed</option>
-          </select>
+          <button class="btn-action promote" data-id="${docSnap.id}" data-role="${user.role}">Toggle Role</button>
+          <button class="btn-action delete" data-id="${docSnap.id}">Delete</button>
         </td>
-      </tr>`;
-  });
+      `;
 
-  document.querySelectorAll(".status-select").forEach((sel) =>
-    sel.addEventListener("change", async (e) => {
-      const bookingId = e.target.dataset.id;
-      const newStatus = e.target.value;
-      await updateDoc(doc(db, "bookings", bookingId), { status: newStatus });
-      alert("Booking status updated!");
-    })
-  );
+      usersListEl.appendChild(row);
+    });
+
+    // Event listeners
+    document.querySelectorAll(".promote").forEach((btn) =>
+      btn.addEventListener("click", () =>
+        toggleRole(btn.dataset.id, btn.dataset.role)
+      )
+    );
+    document.querySelectorAll(".delete").forEach((btn) =>
+      btn.addEventListener("click", () => deleteUser(btn.dataset.id))
+    );
+  } catch (err) {
+    console.error("❌ Failed to load users:", err);
+  }
+}
+
+/* ===== TOGGLE USER ROLE ===== */
+async function toggleRole(userId, currentRole) {
+  const newRole =
+    currentRole === "user"
+      ? "technician"
+      : currentRole === "technician"
+      ? "admin"
+      : "user";
+
+  if (!confirm(`Change role to "${newRole}"?`)) return;
+
+  try {
+    await updateDoc(doc(db, "users", userId), { role: newRole });
+    alert(`Role updated to ${newRole}`);
+    loadUsers();
+    loadOverviewStats();
+  } catch (err) {
+    console.error("❌ Failed to update role:", err);
+  }
 }
 
 /* ===== DELETE USER ===== */
-async function deleteUser(db, userId) {
+async function deleteUser(userId) {
   if (!confirm("Are you sure you want to delete this user?")) return;
-  const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-  await deleteDoc(doc(db, "users", userId));
-  alert("User deleted successfully!");
-  location.reload();
+
+  try {
+    await deleteDoc(doc(db, "users", userId));
+    alert("User deleted successfully");
+    loadUsers();
+    loadOverviewStats();
+  } catch (err) {
+    console.error("❌ Failed to delete user:", err);
+  }
+}
+
+/* ===============================
+   LOAD BOOKINGS TABLE
+   =============================== */
+async function loadBookings() {
+  try {
+    const bookingsSnap = await getDocs(collection(db, "bookings"));
+    bookingsListEl.innerHTML = "";
+
+    bookingsSnap.forEach((docSnap) => {
+      const b = docSnap.data();
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${b.service}</td>
+        <td>${b.email}</td>
+        <td>${b.location || "Unknown"}</td>
+        <td>${b.status}</td>
+        <td>
+          <button class="btn-action approve" data-id="${docSnap.id}" data-status="${b.status}">Approve</button>
+          <button class="btn-action delete-booking" data-id="${docSnap.id}">Delete</button>
+        </td>
+      `;
+
+      bookingsListEl.appendChild(row);
+    });
+
+    // Event listeners
+    document.querySelectorAll(".approve").forEach((btn) =>
+      btn.addEventListener("click", () =>
+        updateBookingStatus(btn.dataset.id, btn.dataset.status)
+      )
+    );
+    document.querySelectorAll(".delete-booking").forEach((btn) =>
+      btn.addEventListener("click", () => deleteBooking(btn.dataset.id))
+    );
+  } catch (err) {
+    console.error("❌ Failed to load bookings:", err);
+  }
+}
+
+/* ===== UPDATE BOOKING STATUS ===== */
+async function updateBookingStatus(bookingId, currentStatus) {
+  const newStatus = currentStatus === "pending" ? "approved" : "completed";
+
+  if (!confirm(`Change booking status to "${newStatus}"?`)) return;
+
+  try {
+    await updateDoc(doc(db, "bookings", bookingId), { status: newStatus });
+    alert(`Booking marked as ${newStatus}`);
+    loadBookings();
+    loadOverviewStats();
+  } catch (err) {
+    console.error("❌ Failed to update booking status:", err);
+  }
+}
+
+/* ===== DELETE BOOKING ===== */
+async function deleteBooking(bookingId) {
+  if (!confirm("Delete this booking?")) return;
+
+  try {
+    await deleteDoc(doc(db, "bookings", bookingId));
+    alert("Booking deleted successfully");
+    loadBookings();
+    loadOverviewStats();
+  } catch (err) {
+    console.error("❌ Failed to delete booking:", err);
+  }
 }

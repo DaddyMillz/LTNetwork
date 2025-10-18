@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
 
   /* ==============================
-     AUTH FORM TOGGLE (SignUp/Login)
+     TOGGLE BETWEEN SIGNUP / LOGIN
   ============================== */
   const signupBox = document.getElementById("signup-box");
   const loginBox = document.getElementById("login-box");
@@ -171,14 +171,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==============================
-     SIGNUP SYSTEM
+     SIGN UP
   ============================== */
   const signupForm = document.getElementById("signup-form");
   if (signupForm) {
     const roleCheckbox = document.getElementById("signup-role");
     const techFields = document.getElementById("technician-fields");
 
-    // Show/hide technician fields dynamically
     if (roleCheckbox && techFields) {
       roleCheckbox.addEventListener("change", () => {
         techFields.classList.toggle("hidden", !roleCheckbox.checked);
@@ -188,43 +187,31 @@ document.addEventListener("DOMContentLoaded", () => {
     signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // Collect form inputs
-      const nameInput = document.getElementById("signup-name");
-      const emailInput = document.getElementById("signup-email");
-      const passwordInput = document.getElementById("signup-password");
-      const professionInput = document.getElementById("signup-profession");
-      const locationInput = document.getElementById("signup-location");
+      let name = document.getElementById("signup-name").value.trim();
+      const email = document.getElementById("signup-email").value.trim();
+      const password = document.getElementById("signup-password").value;
+      const isTechnician = document.getElementById("signup-role").checked;
+      const profession = isTechnician ? document.getElementById("signup-profession").value.trim() : "";
+      const manualLocation = isTechnician ? document.getElementById("signup-location").value.trim() : "";
 
-      let name = nameInput.value.trim();
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      const isTechnician = roleCheckbox?.checked || false;
-
-      // Capitalize full name
       name = name.replace(/\b\w/g, (c) => c.toUpperCase());
 
       try {
-        // Try to auto-detect location
+        // Detect location (optional)
         let locationData = await detectLocation();
         if (!locationData) {
-          locationData = {
-            area: locationInput?.value.trim() || "Unknown",
-            latitude: null,
-            longitude: null
-          };
+          locationData = { area: manualLocation || "Unknown", latitude: null, longitude: null };
         }
 
-        // Create user in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Store user data in Firestore
         await addDoc(collection(db, "users"), {
           uid: user.uid,
           name,
           email,
           role: isTechnician ? "technician" : "user",
-          profession: isTechnician ? professionInput?.value.trim() || "" : "",
+          profession: isTechnician ? profession : "",
           location: {
             city: locationData.area,
             lat: locationData.latitude,
@@ -234,69 +221,89 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         alert("Signup successful! Redirecting...");
-        window.location.href = isTechnician ? "tech-dashboard.html" : "dashboard.html";
-      } catch (error) {
-        console.error("❌ Signup failed:", error);
-        alert("Signup failed: " + error.message);
-      }
-    });
-  }
-
-  /* ==============================
-     LOGIN SYSTEM
-  ============================== */
-  const loginForm = document.getElementById("login-form");
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const email = document.getElementById("login-email").value.trim();
-      const password = document.getElementById("login-password").value;
-
-      if (!email || !password) {
-        alert("Please enter your email and password.");
-        return;
-      }
-
-      try {
-        // Sign in user
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Fetch user role from Firestore
-        const q = query(collection(db, "users"), where("uid", "==", user.uid));
-        const snapshot = await getDocs(q);
-
-        let role = "user";
-        if (!snapshot.empty) {
-          role = snapshot.docs[0].data().role || "user";
-        }
-
-        alert("Login successful! Redirecting...");
-        if (role === "admin") {
+        if (email === "admin@localtech.com") {
           window.location.href = "admin-dashboard.html";
-        } else if (role === "technician") {
-          window.location.href = "tech-dashboard.html";
         } else {
-          window.location.href = "dashboard.html";
+          window.location.href = isTechnician ? "tech-dashboard.html" : "dashboard.html";
         }
-      } catch (error) {
-        console.error("❌ Login failed:", error);
-        alert("Login failed: " + error.message);
+      } catch (err) {
+        console.error("Signup failed:", err);
+        alert("Signup failed: " + err.message);
       }
     });
   }
 
-  /* ==============================
-     AUTO REDIRECT IF LOGGED IN
-  ============================== */
-  onAuthStateChanged(auth, (user) => {
-    if (user && window.location.pathname.endsWith("auth.html")) {
-      window.location.href = "dashboard.html";
+/* ===== LOGIN ===== */
+const loginForm = document.getElementById("login-form");
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Fetch role for redirect
+      const q = query(collection(db, "users"), where("uid", "==", user.uid));
+      const snapshot = await getDocs(q);
+      let role = "user";
+
+      if (!snapshot.empty) role = snapshot.docs[0].data().role || "user";
+
+      alert("Login successful! Redirecting...");
+
+      // Redirect based on role
+      switch (role) {
+        case "admin":
+          window.location.href = "admin-dashboard.html";
+          break;
+        case "technician":
+          window.location.href = "tech-dashboard.html";
+          break;
+        default:
+          window.location.href = "dashboard.html";
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      alert("Login failed: " + err.message);
     }
   });
-})();
+}
 
+/* ===== AUTO REDIRECT IF LOGGED IN ===== */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  const q = query(collection(db, "users"), where("uid", "==", user.uid));
+  const snapshot = await getDocs(q);
+  let role = "user";
+  if (!snapshot.empty) role = snapshot.docs[0].data().role || "user";
+
+  const path = window.location.pathname;
+
+  // Protect pages by role
+  if (path.endsWith("auth.html")) {
+    if (role === "admin") window.location.href = "admin-dashboard.html";
+    else if (role === "technician") window.location.href = "tech-dashboard.html";
+    else window.location.href = "dashboard.html";
+  }
+
+  // Prevent users from opening another role’s dashboard manually
+  if (path.endsWith("admin-dashboard.html") && role !== "admin") {
+    window.location.href = "dashboard.html";
+  }
+  if (path.endsWith("tech-dashboard.html") && role !== "technician") {
+    window.location.href = "dashboard.html";
+  }
+});
 
 /* ===== DASHBOARD PROTECTION + LOGOUT + ROLE CHECK ===== */
 (async function dashboardProtection() {

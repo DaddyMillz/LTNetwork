@@ -1,97 +1,100 @@
-/* ================================
-   ADMIN DASHBOARD STYLES
-================================ */
-
-/* GENERAL LAYOUT */
-body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  background: #f8f9fc;
-  color: #333;
-}
-
-/* HEADER */
-.header {
-  background: #000000;
-  color: #fff;
-  padding: 1rem 0;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.nav-container {
-  width: 90%;
-  max-width: 1200px;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.logo img {
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.logo h1 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin: 0;
-  color: #fff;
-}
-
-.navbar ul {
-  list-style: none;
-  display: flex;
-  gap: 1.2rem;
+/* ====== RESET ====== */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
-.navbar a {
+body {
+  background-color: #f7f7f7;
+  color: #111;
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ====== SIDEBAR ====== */
+.sidebar {
+  width: 240px;
+  background: #000;
+  color: #fff;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: fixed;
+  height: 100%;
+  left: 0;
+  top: 0;
+  padding: 1rem 0;
+}
+
+.sidebar .logo {
+  text-align: center;
+  padding: 1rem;
+  border-bottom: 1px solid #333;
+}
+
+.sidebar .logo img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.sidebar h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 2rem;
+}
+
+.sidebar nav ul li {
+  margin: 0.5rem 0;
+}
+
+.sidebar nav ul li a {
+  display: block;
+  padding: 0.8rem 1.5rem;
   color: #fff;
   text-decoration: none;
   font-weight: 500;
-  transition: 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.navbar a:hover,
-.navbar a.active {
-  text-decoration: underline;
+.sidebar nav ul li a.active,
+.sidebar nav ul li a:hover {
+  background-color: #fff;
+  color: #000;
+  border-radius: 0 25px 25px 0;
 }
 
-.menu-toggle {
-  display: none;
-  font-size: 1.8rem;
-  cursor: pointer;
-  color: #fff;
+.sidebar footer {
+  padding: 1rem;
+  text-align: center;
+  border-top: 1px solid #333;
+  font-size: 0.85rem;
+  color: #aaa;
 }
 
-/* MAIN CONTAINER */
+/* ====== MAIN CONTENT ====== */
 .admin-main {
-  width: 90%;
-  max-width: 1200px;
-  margin: 2rem auto;
+  margin-left: 240px;
+  flex-grow: 1;
+  padding: 2rem;
 }
 
 .admin-main h2 {
-  font-size: 1.6rem;
-  color: #000000;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-/* OVERVIEW CARDS */
+/* ====== OVERVIEW GRID ====== */
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -101,159 +104,153 @@ body {
 
 .overview-card {
   background: #fff;
+  border: 1px solid #ddd;
+  border-left: 5px solid #000;
+  border-radius: 12px;
   padding: 1.2rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .overview-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .overview-card h3 {
   font-size: 1rem;
-  color: #555;
-  margin-bottom: 0.4rem;
+  color: #444;
 }
 
 .overview-card p {
   font-size: 1.6rem;
-  font-weight: 600;
-  color: #000000;
-  margin: 0;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  color: #000;
 }
 
-/* SECTIONS */
+/* ====== ADMIN TABLES ====== */
 .admin-section {
   background: #fff;
-  padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
   margin-bottom: 2rem;
-  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .admin-section h3 {
-  margin-bottom: 1rem;
-  color: #000000;
   font-size: 1.2rem;
+  margin-bottom: 1rem;
+  border-left: 5px solid #000;
+  padding-left: 0.5rem;
 }
 
-/* TABLE */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 700px;
+  overflow-x: auto;
   font-size: 0.95rem;
+}
+
+.admin-table thead {
+  background: #000;
+  color: #fff;
 }
 
 .admin-table th,
 .admin-table td {
-  padding: 0.9rem 1rem;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
   text-align: left;
-  border-bottom: 1px solid #eee;
   vertical-align: middle;
 }
 
-.admin-table th {
-  background: #f5f5f5;
-  color: #444;
-  font-weight: 600;
-  text-transform: capitalize;
+.admin-table tbody tr:hover {
+  background: #f0f0f0;
 }
 
-.admin-table tr:hover {
-  background: #fafafa;
-}
-
-.admin-table td {
-  color: #555;
-}
-
-/* ACTION BUTTONS */
-.btn {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  border: none;
-  border-radius: 5px;
+/* ====== BUTTONS & INPUTS ====== */
+button,
+select {
   cursor: pointer;
-  transition: 0.2s ease;
-  font-weight: 500;
-}
-
-.btn-view {
-  background: #1e88e5;
-  color: #fff;
-}
-.btn-view:hover {
-  background: #1565c0;
-}
-
-.btn-approve {
-  background: #4caf50;
-  color: #fff;
-}
-.btn-approve:hover {
-  background: #388e3c;
-}
-
-.btn-reject,
-.btn-delete {
-  background: #f44336;
-  color: #fff;
-}
-.btn-reject:hover,
-.btn-delete:hover {
-  background: #d32f2f;
-}
-
-/* RESPONSIVE TABLES */
-@media (max-width: 768px) {
-  .admin-table,
-  .admin-table thead,
-  .admin-table tbody,
-  .admin-table th,
-  .admin-table td,
-  .admin-table tr {
-    display: block;
-  }
-
-  .admin-table thead {
-    display: none;
-  }
-
-  .admin-table tr {
-    margin-bottom: 1rem;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 1rem;
-    background: #fff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  }
-
-  .admin-table td {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.6rem 0;
-    border: none;
-  }
-
-  .admin-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #333;
-  }
-}
-
-/* FOOTER */
-footer {
-  background: #000000;
-  color: #fff;
-  text-align: center;
-  padding: 1rem 0;
+  font-family: inherit;
   font-size: 0.9rem;
-  margin-top: 3rem;
+}
+
+.delete-btn {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
+
+.status-select {
+  padding: 0.4rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.status-select:focus {
+  outline: 1px solid #000;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 992px) {
+  .admin-main {
+    margin-left: 200px;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .sidebar nav ul {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .sidebar nav ul li a {
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .admin-main {
+    margin-left: 0;
+  }
+
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-card p {
+    font-size: 1.3rem;
+  }
+
+  .admin-section h3 {
+    font-size: 1rem;
+  }
 }

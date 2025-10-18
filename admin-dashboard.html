@@ -9,27 +9,29 @@
 </head>
 <body>
 
-  <!-- ===== HEADER ===== -->
-  <header class="header">
-    <div class="container nav-container">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div>
       <div class="logo">
-        <img src="./assets/images/logo.jpg" alt="logo" />
-        <h1>Admin Panel</h1>
+        <img src="./assets/images/logo.jpg" alt="Logo">
+        <h2>Admin Panel</h2>
       </div>
 
-      <nav class="navbar" id="navbar">
+      <nav>
         <ul>
           <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
           <li><a href="#" id="logout-btn">Logout</a></li>
         </ul>
       </nav>
-
-      <div class="menu-toggle" id="menu-toggle">&#9776;</div>
     </div>
-  </header>
 
-  <!-- ===== DASHBOARD MAIN ===== -->
-  <main class="admin-main container">
+    <footer>
+      <p>&copy; 2025 Local Technician Network</p>
+    </footer>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="admin-main">
     <h2>👋 Welcome, <span id="admin-name">Admin</span></h2>
 
     <!-- ===== OVERVIEW CARDS ===== -->
@@ -55,52 +57,51 @@
     <!-- ===== USER MANAGEMENT ===== -->
     <section class="admin-section">
       <h3>Manage Users & Technicians</h3>
-      <table class="admin-table" id="users-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Profession</th>
-            <th>Location</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="users-list">
-          <!-- Loaded dynamically -->
-        </tbody>
-      </table>
+      <div class="table-container">
+        <table class="admin-table" id="users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Profession</th>
+              <th>Location</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="users-list">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- ===== BOOKINGS MANAGEMENT ===== -->
     <section class="admin-section">
       <h3>Manage Bookings</h3>
-      <table class="admin-table" id="bookings-table">
-        <thead>
-          <tr>
-            <th>Service</th>
-            <th>User</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="bookings-list">
-          <!-- Loaded dynamically -->
-        </tbody>
-      </table>
+      <div class="table-container">
+        <table class="admin-table" id="bookings-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>User</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-list">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
     </section>
   </main>
-
-  <!-- ===== FOOTER ===== -->
-  <footer>
-    <p>&copy; 2025 Local Technician Network. Admin Portal.</p>
-  </footer>
 
   <!-- ===== SCRIPTS ===== -->
   <script type="module">
     import "./js/firebase-config.js";
-    import "./js/admin.js";
+    import "./js/main.js";
   </script>
 </body>
 </html>
