@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-/* ===== LOGIN ===== */
+  /* ===== LOGIN ===== */
 const loginForm = document.getElementById("login-form");
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
@@ -304,6 +304,24 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "dashboard.html";
   }
 });
+
+  }
+
+  /* ==============================
+     AUTO REDIRECT IF LOGGED IN
+  ============================== */
+  onAuthStateChanged(auth, (user) => {
+    if (user && window.location.pathname.endsWith("auth.html")) {
+      // Prevent redirect loop for admin
+      if (user.email === "admin@localtech.com") {
+        window.location.href = "admin-dashboard.html";
+      } else {
+        window.location.href = "dashboard.html";
+      }
+    }
+  });
+})();
+
 
 /* ===== DASHBOARD PROTECTION + LOGOUT + ROLE CHECK ===== */
 (async function dashboardProtection() {
