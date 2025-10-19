@@ -1,57 +1,50 @@
-/* =========================================
-   ADMIN DASHBOARD - Local Technician Network
-   ========================================= */
-console.log("✅ Admin script loaded");
+/* ==========================================================
+   LOCAL TECHNICIAN NETWORK - MAIN SCRIPT
+   Handles: Navbar, Auth, Booking, Dashboards, Location, etc.
+   ========================================================== */
 
-/* ===== FIREBASE INITIALIZATION ===== */
-if (!window.firebaseAuth || !window.firebaseDB) {
-  console.error("❌ Firebase not initialized!");
-}
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ DOM loaded. Initializing...");
 
-/* ===== AUTHENTICATION GUARD (Admin Only on Admin Page) ===== */
-(async function adminAuthGuard() {
-  // Only run this check on admin dashboard page
-  if (!window.location.pathname.endsWith("admin-dashboard.html")) return;
+  /* ===== GLOBAL ERROR LOGGER ===== */
+  window.addEventListener("error", (e) =>
+    console.error("💥 JS Error:", e.message)
+  );
 
-  const { onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const auth = window.firebaseAuth;
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("You must be logged in as an admin to access this page.");
-      window.location.href = "auth.html";
-      return;
-    }
-
-    // Allow only authorized admin emails
-    const adminEmails = ["admin@localtech.com", "superadmin@gmail.com"];
-    if (!adminEmails.includes(user.email)) {
-      alert("Access denied. Admins only.");
-      await signOut(auth);
-      window.location.href = "auth.html";
-      return;
-    }
-
-    document.getElementById("admin-name").textContent = user.email.split("@")[0];
-    console.log("✅ Admin logged in:", user.email);
-  });
-
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      alert("Logged out successfully.");
-      window.location.href = "auth.html";
+  /* ===== NAVBAR TOGGLE ===== */
+  const menuToggle = document.getElementById("menu-toggle");
+  const navbar = document.getElementById("navbar");
+  if (menuToggle && navbar) {
+    menuToggle.addEventListener("click", () => {
+      navbar.classList.toggle("active");
     });
   }
-})();
 
+  /* ===== CATEGORY & SERVICE CARD CLICKS ===== */
+  document.querySelectorAll(".category-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const category = card.textContent.trim().toLowerCase();
+      window.location.href = `technicians.html?category=${encodeURIComponent(category)}`;
+    });
+  });
 
-/* ===== LOCATION DETECTION ===== */
+  document.querySelectorAll(".service-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const service =
+        card.getAttribute("data-service") ||
+        card.textContent.trim().toLowerCase();
+      window.location.href = `booking.html?service=${encodeURIComponent(service)}`;
+    });
+  });
+});
+
+/* ==========================================================
+   GEOLOCATION
+   ========================================================== */
 async function detectLocation() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.warn("❌ Geolocation not supported. Using fallback.");
+      console.warn("❌ Geolocation not supported.");
       return resolve(null);
     }
 
@@ -64,93 +57,37 @@ async function detectLocation() {
           );
           const data = await res.json();
           const area =
-            (data && data.address && (
-              data.address.suburb ||
-              data.address.city_district ||
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              data.address.state
-            )) || "Unknown Area";
+            data.address.city ||
+            data.address.town ||
+            data.address.state ||
+            data.address.village ||
+            "Unknown Area";
           resolve({ area, latitude, longitude });
         } catch (err) {
-          console.warn("⚠️ Reverse geocoding failed:", err);
-          resolve({ area: "Unknown", latitude, longitude });
+          console.warn("⚠️ Location fetch failed:", err);
+          resolve(null);
         }
       },
       (err) => {
-        console.warn("⚠️ Location access denied:", err.message);
+        console.warn("⚠️ Location denied:", err.message);
         resolve(null);
-      },
-      { timeout: 10000 }
+      }
     );
   });
 }
 
-/* ===== INITIAL FIREBASE CHECK ===== */
-console.log('Firebase check:', window.firebaseApp, window.firebaseAuth, window.firebaseDB);
-
-/* ===== NAVBAR TOGGLE, CATEGORY & SERVICE CLICKS ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const menuToggle = document.getElementById('menu-toggle');
-  const navbar = document.getElementById('navbar');
-  if (menuToggle && navbar) {
-    menuToggle.addEventListener('click', () => navbar.classList.toggle('active'));
-  }
-
-  document.querySelectorAll(".category-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const category = card.textContent.trim().replace(/[^\w\s]/gi, '').toLowerCase();
-      window.location.href = `technicians.html?category=${encodeURIComponent(category)}`;
-    });
-  });
-
-  document.querySelectorAll(".service-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const service = card.getAttribute("data-service") || card.textContent.trim().toLowerCase();
-      // prefer booking page so user can provide details
-      window.location.href = `booking.html?service=${encodeURIComponent(service)}`;
-    });
-  });
-});
-
-/* ===== AUTO-FILL SERVICE NAME ON BOOKING PAGE ===== */
-(function fillServiceTitle(){
-  const serviceParam = new URLSearchParams(window.location.search).get('service');
-  if (!serviceParam) return;
-  const serviceTitle = document.getElementById('service-title');
-  if (serviceTitle) {
-    const formatted = serviceParam.charAt(0).toUpperCase() + serviceParam.slice(1);
-    serviceTitle.textContent = `Book ${formatted} Service`;
-  }
-})();
-
-/* ===== FIREBASE AUTH SYSTEM (Signup, Login & Auto Redirect) ===== */
+/* ===== FIREBASE AUTH (Signup & Login) ===== */
 (async function authSystem() {
   if (!window.firebaseAuth || !window.firebaseDB) return;
 
-  // === Initialize Firebase Services ===
   const auth = window.firebaseAuth;
   const db = window.firebaseDB;
+  const { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } =
+    await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
+  const { addDoc, collection, getDocs, query, where, serverTimestamp } =
+    await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
 
-  const {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged
-  } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-
-  const {
-    addDoc,
-    collection,
-    getDocs,
-    query,
-    where,
-    serverTimestamp
-  } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-
-  /* ==============================
-     TOGGLE BETWEEN SIGNUP / LOGIN
-  ============================== */
+  /* ===== TOGGLE BETWEEN SIGNUP / LOGIN ===== */
   const signupBox = document.getElementById("signup-box");
   const loginBox = document.getElementById("login-box");
   const showLogin = document.getElementById("show-login");
@@ -162,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
       signupBox.classList.add("hidden");
       loginBox.classList.remove("hidden");
     });
-
     showSignup.addEventListener("click", (e) => {
       e.preventDefault();
       loginBox.classList.add("hidden");
@@ -170,454 +106,191 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ==============================
-     SIGN UP
-  ============================== */
-  const signupForm = document.getElementById("signup-form");
-  if (signupForm) {
-    const roleCheckbox = document.getElementById("signup-role");
-    const techFields = document.getElementById("technician-fields");
+ /* ===== SIGN UP ===== */
+const signupForm = document.getElementById("signup-form");
+if (signupForm) {
+  const roleCheckbox = document.getElementById("signup-role");
+  const techFields = document.getElementById("technician-fields");
 
-    if (roleCheckbox && techFields) {
-      roleCheckbox.addEventListener("change", () => {
-        techFields.classList.toggle("hidden", !roleCheckbox.checked);
-      });
-    }
-
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      let name = document.getElementById("signup-name").value.trim();
-      const email = document.getElementById("signup-email").value.trim();
-      const password = document.getElementById("signup-password").value;
-      const isTechnician = document.getElementById("signup-role").checked;
-      const profession = isTechnician ? document.getElementById("signup-profession").value.trim() : "";
-      const manualLocation = isTechnician ? document.getElementById("signup-location").value.trim() : "";
-
-      name = name.replace(/\b\w/g, (c) => c.toUpperCase());
-
-      try {
-        // Detect location (optional)
-        let locationData = await detectLocation();
-        if (!locationData) {
-          locationData = { area: manualLocation || "Unknown", latitude: null, longitude: null };
-        }
-
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        await addDoc(collection(db, "users"), {
-          uid: user.uid,
-          name,
-          email,
-          role: isTechnician ? "technician" : "user",
-          profession: isTechnician ? profession : "",
-          location: {
-            city: locationData.area,
-            lat: locationData.latitude,
-            lng: locationData.longitude
-          },
-          createdAt: serverTimestamp()
-        });
-
-        alert("Signup successful! Redirecting...");
-        if (email === "admin@localtech.com") {
-          window.location.href = "admin-dashboard.html";
-        } else {
-          window.location.href = isTechnician ? "tech-dashboard.html" : "dashboard.html";
-        }
-      } catch (err) {
-        console.error("Signup failed:", err);
-        alert("Signup failed: " + err.message);
-      }
+  // Toggle technician fields
+  if (roleCheckbox && techFields) {
+    roleCheckbox.addEventListener("change", () => {
+      techFields.classList.toggle("hidden", !roleCheckbox.checked);
     });
   }
 
-  /* ===== LOGIN ===== */
-const loginForm = document.getElementById("login-form");
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
+  signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("login-email").value.trim();
-    const password = document.getElementById("login-password").value;
+    // Get form data
+    let name = document.getElementById("signup-name").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value;
+    const isTech = document.getElementById("signup-role").checked;
+    const profession = isTech
+      ? document.getElementById("signup-profession").value.trim()
+      : "";
+    const manualLocation = isTech
+      ? document.getElementById("signup-location").value.trim()
+      : "";
 
-    if (!email || !password) {
-      alert("Please enter both email and password.");
-      return;
-    }
+    name = name.replace(/\b\w/g, (c) => c.toUpperCase());
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const auth = window.firebaseAuth;
+      const db = window.firebaseDB;
+
+      if (!auth || !db) {
+        alert("Firebase not initialized correctly.");
+        return;
+      }
+
+      // Detect location safely
+      let locationData = null;
+      try {
+        locationData = await detectLocation();
+      } catch {
+        console.warn("Location detection failed, fallback to manual input.");
+      }
+
+      // Create user
+      const { createUserWithEmailAndPassword } = await import(
+        "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"
+      );
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
-      // Fetch role for redirect
-      const q = query(collection(db, "users"), where("uid", "==", user.uid));
-      const snapshot = await getDocs(q);
-      let role = "user";
+      // Save user data in Firestore
+      const { addDoc, collection, serverTimestamp } = await import(
+        "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"
+      );
 
-      if (!snapshot.empty) role = snapshot.docs[0].data().role || "user";
+      await addDoc(collection(db, "users"), {
+        uid: user.uid,
+        name,
+        email,
+        role: isTech ? "technician" : "user",
+        profession,
+        location: {
+          city: locationData?.area || manualLocation || "Unknown",
+          lat: locationData?.latitude || null,
+          lng: locationData?.longitude || null,
+        },
+        createdAt: serverTimestamp(),
+      });
 
-      alert("Login successful! Redirecting...");
-
-      // Redirect based on role
-      switch (role) {
-        case "admin":
-          window.location.href = "admin-dashboard.html";
-          break;
-        case "technician":
-          window.location.href = "tech-dashboard.html";
-          break;
-        default:
-          window.location.href = "dashboard.html";
-      }
+      alert("Signup successful! Redirecting...");
+      window.location.href = isTech
+        ? "tech-dashboard.html"
+        : "dashboard.html";
     } catch (err) {
-      console.error("Login failed:", err);
-      alert("Login failed: " + err.message);
+      console.error("Signup failed:", err);
+      alert("Signup failed: " + err.message);
     }
   });
 }
 
-/* ===== AUTO REDIRECT IF LOGGED IN ===== */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
 
-  const q = query(collection(db, "users"), where("uid", "==", user.uid));
-  const snapshot = await getDocs(q);
-  let role = "user";
-  if (!snapshot.empty) role = snapshot.docs[0].data().role || "user";
+  /* ===== LOGIN ===== */
+  const loginForm = document.getElementById("login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  const path = window.location.pathname;
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      if (!email || !password) return alert("Please enter your email and password.");
 
-  // Protect pages by role
-  if (path.endsWith("auth.html")) {
-    if (role === "admin") window.location.href = "admin-dashboard.html";
-    else if (role === "technician") window.location.href = "tech-dashboard.html";
-    else window.location.href = "dashboard.html";
-  }
-
-  // Prevent users from opening another role’s dashboard manually
-  if (path.endsWith("admin-dashboard.html") && role !== "admin") {
-    window.location.href = "dashboard.html";
-  }
-  if (path.endsWith("tech-dashboard.html") && role !== "technician") {
-    window.location.href = "dashboard.html";
-  }
-});
-
-  }
-
-  /* ==============================
-     AUTO REDIRECT IF LOGGED IN
-  ============================== */
-  onAuthStateChanged(auth, (user) => {
-    if (user && window.location.pathname.endsWith("auth.html")) {
-      // Prevent redirect loop for admin
-      if (user.email === "admin@localtech.com") {
-        window.location.href = "admin-dashboard.html";
-      } else {
-        window.location.href = "dashboard.html";
-      }
-    }
-  });
-})();
-
-
-/* ===== DASHBOARD PROTECTION + LOGOUT + ROLE CHECK ===== */
-(async function dashboardProtection() {
-  if (!window.firebaseAuth || !window.firebaseDB) return;
-  const auth = window.firebaseAuth;
-  const db = window.firebaseDB;
-
-  const { onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-
-  // attach logout if present
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
       try {
-        await signOut(auth);
-        alert('You have been logged out.');
-        window.location.href = 'auth.html';
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Get role from Firestore
+        const q = query(collection(db, "users"), where("uid", "==", user.uid));
+        const snapshot = await getDocs(q);
+        const role = !snapshot.empty ? snapshot.docs[0].data().role : "user";
+
+        alert("Login successful! Redirecting...");
+        if (role === "admin") {
+          window.location.href = "admin-dashboard.html";
+        } else if (role === "technician") {
+          window.location.href = "tech-dashboard.html";
+        } else {
+          window.location.href = "dashboard.html";
+        }
       } catch (err) {
-        console.error("Logout failed:", err);
+        console.error("❌ Login failed:", err);
+        alert("Login failed: " + err.message);
       }
     });
   }
 
-  // Protect pages and redirect by role
-  onAuthStateChanged(auth, async (user) => {
-    const path = window.location.pathname;
-
-    // if on either dashboard pages, ensure correct role
-    if (user && (path.endsWith("dashboard.html") || path.endsWith("tech-dashboard.html"))) {
-      const q = query(collection(db, "users"), where("uid", "==", user.uid));
-      const snapshot = await getDocs(q);
-      const role = snapshot.empty ? "user" : (snapshot.docs[0].data().role || "user");
-
-      if (path.endsWith("dashboard.html") && role === "technician") {
-        // technician shouldn't use user dashboard — send to tech dashboard
-        window.location.href = "tech-dashboard.html";
-      } else if (path.endsWith("tech-dashboard.html") && role !== "technician") {
-        // non-tech shouldn't use tech dashboard
-        window.location.href = "dashboard.html";
-      }
-    } else if (!user && (path.endsWith("dashboard.html") || path.endsWith("tech-dashboard.html"))) {
-      // not signed in — send to auth
-      window.location.href = "auth.html";
-    }
-  });
-})();
-
-/* ===== DASHBOARD GREETING ===== */
-(async function dashboardGreeting() {
-  if (!window.firebaseAuth || !window.firebaseDB) return;
-  const auth = window.firebaseAuth;
-  const db = window.firebaseDB;
-
-  const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-
-  const userGreetingEl = document.getElementById("user-greeting");
-  const techGreetingEl = document.getElementById("tech-greeting");
-  if (!userGreetingEl && !techGreetingEl) return;
-
+  /* ===== AUTO REDIRECT IF ALREADY LOGGED IN ===== */
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
-
     const q = query(collection(db, "users"), where("uid", "==", user.uid));
     const snapshot = await getDocs(q);
+    const role = !snapshot.empty ? snapshot.docs[0].data().role : "user";
 
-    let displayName = user.email.split("@")[0];
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      if (data.name) displayName = data.name;
+    if (window.location.pathname.endsWith("auth.html")) {
+      if (role === "admin") window.location.href = "admin-dashboard.html";
+      else if (role === "technician") window.location.href = "tech-dashboard.html";
+      else window.location.href = "dashboard.html";
     }
-
-    displayName = displayName.replace(/\b\w/g, c => c.toUpperCase());
-    const firstName = displayName.split(" ")[0];
-
-    if (userGreetingEl) userGreetingEl.textContent = `👋 Welcome, ${firstName}!`;
-    if (techGreetingEl) techGreetingEl.textContent = `👋 Welcome, ${firstName}!`;
   });
 })();
 
-/* ===== USER DASHBOARD BOOKINGS ===== */
-(async function loadUserBookings() {
-  if (!window.firebaseAuth || !window.firebaseDB) return;
-  const auth = window.firebaseAuth;
-  const db = window.firebaseDB;
 
-  const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
+/* ==========================================================
+   LOGOUT HANDLER
+   ========================================================== */
+(async function logoutSystem() {
+  const logoutBtn = document.getElementById("logout-btn");
+  if (!logoutBtn) return;
 
-  const container = document.getElementById("user-bookings");
-  if (!container) return;
+  const { signOut } = await import(
+    "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"
+  );
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-    const q = query(collection(db, "bookings"), where("uid", "==", user.uid));
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      container.innerHTML = "<p>You have no bookings yet.</p>";
-      return;
-    }
-
-    container.innerHTML = "";
-    snapshot.forEach(doc => {
-      const b = doc.data();
-      container.innerHTML += `
-        <div class="booking-card">
-          <h3>${b.service}</h3>
-          <p><strong>Location:</strong> ${b.location || "Unknown"}</p>
-          <p><strong>Status:</strong> ${b.status}</p>
-        </div>`;
-    });
-  });
-})();
-
-/* ===== TECHNICIAN DASHBOARD: PENDING JOBS NEARBY ===== */
-(async function loadTechJobs() {
-  if (!window.firebaseAuth || !window.firebaseDB) return;
-  const auth = window.firebaseAuth;
-  const db = window.firebaseDB;
-
-  const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
-  const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-
-  const container = document.getElementById("job-list");
-  if (!container) return;
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-
-    // get technician record
-    const usersRef = collection(db, "users");
-    const uq = query(usersRef, where("uid", "==", user.uid));
-    const usnap = await getDocs(uq);
-    if (usnap.empty) {
-      container.innerHTML = "<p>No technician profile found.</p>";
-      return;
-    }
-    const tech = usnap.docs[0].data();
-    const techCity = (tech.location && tech.location.city || "").toLowerCase();
-
-    // show pending bookings in same city
-    const bq = query(collection(db, "bookings"), where("status", "==", "pending"));
-    const bsnap = await getDocs(bq);
-
-    const matches = bsnap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(b => (b.location || "").toLowerCase().includes(techCity) || !techCity);
-
-    if (!matches.length) {
-      container.innerHTML = "<p>No pending jobs in your area.</p>";
-      return;
-    }
-
-    container.innerHTML = "";
-    matches.forEach(job => {
-      container.innerHTML += `
-        <div class="booking-card">
-          <h3>${job.service}</h3>
-          <p><strong>Client:</strong> ${job.email}</p>
-          <p><strong>Location:</strong> ${job.location || "Unknown"}</p>
-          <p><strong>Details:</strong> ${job.details || ""}</p>
-          <p><strong>Status:</strong> ${job.status}</p>
-        </div>`;
-    });
-  });
-})();
-
-/* ===== BOOKING FORM (auto location fallback) ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const bookingForm = document.getElementById("booking-form");
-  const popup = document.getElementById("success-popup");
-  const closePopup = document.getElementById("close-popup");
-  if (!bookingForm) return;
-
-  bookingForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById("book-name").value.trim();
-    const phone = document.getElementById("book-phone").value.trim();
-    let locationInput = document.getElementById("book-location").value.trim();
-    const details = document.getElementById("book-details").value.trim();
-    const serviceParam = new URLSearchParams(window.location.search).get("service") || "General";
-
-    if (!name || !phone) {
-      alert("Please fill in name and phone.");
-      return;
-    }
-
+  logoutBtn.addEventListener("click", async () => {
     try {
-      // detect if no manual location
-      if (!locationInput) {
-        const detected = await detectLocation();
-        locationInput = detected ? detected.area : "Unknown";
-      }
-
-      const user = window.firebaseAuth.currentUser;
-      if (!user) {
-        alert("Please log in before booking.");
-        window.location.href = "auth.html";
-        return;
-      }
-
-      const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-      const db = window.firebaseDB;
-
-      await addDoc(collection(db, "bookings"), {
-        uid: user.uid,
-        email: user.email,
-        name,
-        phone,
-        location: locationInput,
-        details,
-        service: serviceParam,
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-
-      bookingForm.reset();
-      if (popup) popup.classList.remove("hidden");
-      console.log("✅ Booking saved successfully!");
+      await signOut(window.firebaseAuth);
+      alert("You’ve been logged out.");
+      window.location.href = "auth.html";
     } catch (err) {
-      console.error("❌ Booking save failed:", err);
-      alert("Something went wrong while saving your booking.");
+      console.error("Logout failed:", err);
     }
   });
+})();
 
-  if (closePopup) closePopup.addEventListener("click", () => {
-    const popup = document.getElementById("success-popup");
-    if (popup) popup.classList.add("hidden");
-    window.location.href = "services.html";
+/* ===== HOME PAGE SEARCH HANDLER ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  const homeSearchForm = document.getElementById("home-search-form");
+  if (!homeSearchForm) return;
+
+  homeSearchForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const profession = document.getElementById("home-profession").value.trim();
+    const locationInput = document.getElementById("home-location").value.trim();
+
+    let location = locationInput;
+    if (!locationInput) {
+      const locData = await detectLocation();
+      location = locData?.area || "unknown";
+    }
+
+    if (!profession) {
+      alert("Please enter a profession (e.g. Electrician, Plumber)");
+      return;
+    }
+
+    window.location.href = `technicians.html?profession=${encodeURIComponent(profession)}&location=${encodeURIComponent(location)}`;
   });
 });
 
-/* ===== TECHNICIAN SEARCH (profession + detected/manual location) ===== */
-(async function technicianSearch() {
-  if (!window.firebaseDB) return;
-  const db = window.firebaseDB;
-  const searchForm = document.getElementById("search-form");
-  const resultsContainer = document.getElementById("tech-results");
-  if (!searchForm || !resultsContainer) return;
 
-  const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
-
-  searchForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const service = document.getElementById("search-service").value.trim().toLowerCase();
-    const areaInput = document.getElementById("search-location").value.trim();
-    let userArea = areaInput;
-
-    if (!service) {
-      alert("Please enter the service/profession you're looking for.");
-      return;
-    }
-
-    // attempt auto-detect if area not provided
-    if (!userArea) {
-      const detected = await detectLocation();
-      userArea = detected ? detected.area : "";
-    }
-
-    resultsContainer.innerHTML = "<p>Searching...</p>";
-
-    try {
-      const snapshot = await getDocs(collection(db, "users"));
-      const matches = snapshot.docs
-        .map(d => d.data())
-        .filter(u =>
-          u.role === "technician" &&
-          (u.profession || "").toLowerCase().includes(service) &&
-          ((u.location && u.location.city && userArea && u.location.city.toLowerCase().includes(userArea.toLowerCase())) || !userArea)
-        );
-
-      if (!matches.length) {
-        resultsContainer.innerHTML = "<p>No technicians found for your search.</p>";
-        return;
-      }
-
-      resultsContainer.innerHTML = "";
-      matches.forEach(t => {
-        resultsContainer.innerHTML += `
-          <div class="tech-card">
-            <h3>${t.name}</h3>
-            <p><strong>Profession:</strong> ${t.profession || "—"}</p>
-            <p><strong>Location:</strong> ${t.location?.city || "Unknown"}</p>
-            <p><strong>Contact:</strong> ${t.email || "—"}</p>
-            <button class="btn-login" onclick="window.location.href='booking.html?service=${encodeURIComponent(t.profession || 'General')}'">
-              Book Now
-            </button>
-          </div>
-        `;
-      });
-    } catch (err) {
-      console.error("Search failed:", err);
-      resultsContainer.innerHTML = "<p>Search failed. Try again.</p>";
-    }
-  });
-})();
 

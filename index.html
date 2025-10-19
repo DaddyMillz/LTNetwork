@@ -18,11 +18,12 @@
       
      <nav class="navbar" id="navbar">
   <ul>
-    <li><a href="index.html" class="active">Home</a></li>
-    <li><a href="technicians.html">Technicians</a></li>
+    <li><a href="index.html" class="active">Home</a></li> 
     <li><a href="services.html">Services</a></li>
+    <li><a href="technicians.html">Technicians</a></li>
+     <li><a href="dashboard.html">Dashboard</a></li>
     <li><a href="auth.html">Sign Up / Login</a></li>
-    <li><a href="dashboard.html">Dashboard</a></li>
+
   </ul>
 </nav>
 
@@ -31,26 +32,20 @@
   </header>
 
   <!-- ===== HERO ===== -->
-  <section class="hero">
-    <div class="hero-overlay">
-      <div class="hero-content">
-        <h2>Find Trusted Technicians Near You</h2>
-        <p>Quickly connect with verified professionals — electricians, plumbers, mechanics, and more.</p>
-        <form class="search-bar">
-          <select required>
-            <option value="">Select Category</option>
-            <option value="electrical">Electrical</option>
-            <option value="plumbing">Plumbing</option>
-            <option value="mechanic">Mechanic</option>
-            <option value="ac">AC Repair</option>
-            <option value="home">Home Appliances</option>
-          </select>
-          <input type="text" placeholder="Enter your location" required>
-          <button type="submit">Search</button>
-        </form>
-      </div>
-    </div>
-  </section>
+ <!-- ===== HERO / SEARCH SECTION ===== -->
+<section class="hero">
+  <div class="container hero-content">
+    <h1>Find Trusted Technicians Near You</h1>
+    <p>Quickly connect with verified professionals — from electricians to cleaners.</p>
+
+    <form id="home-search-form" class="search-bar">
+      <input type="text" id="home-profession" placeholder="Profession (e.g. Electrician, Welder)" />
+      <input type="text" id="home-location" placeholder="Enter location or leave blank for auto-detect" />
+      <button type="submit">Search</button>
+    </form>
+  </div>
+</section>
+
 
   <!-- ===== POPULAR CATEGORIES ===== -->
   <section class="categories">

@@ -1,240 +1,183 @@
-/* ===============================
-   ADMIN DASHBOARD SCRIPT
-   =============================== */
-import { auth, db } from "./firebase-config.js";
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  updateDoc,
-  doc,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+/* ===== ADMIN DASHBOARD SCRIPT ===== */
+(async function adminDashboard() {
+  if (!window.firebaseAuth || !window.firebaseDB) return;
 
-/* ===== DOM ELEMENTS ===== */
-const adminNameEl = document.getElementById("admin-name");
-const logoutBtn = document.getElementById("logout-btn");
-const totalUsersEl = document.getElementById("total-users");
-const totalTechsEl = document.getElementById("total-technicians");
-const totalBookingsEl = document.getElementById("total-bookings");
-const pendingBookingsEl = document.getElementById("pending-bookings");
-const usersListEl = document.getElementById("users-list");
-const bookingsListEl = document.getElementById("bookings-list");
+  const auth = window.firebaseAuth;
+  const db = window.firebaseDB;
 
-/* ===============================
-   AUTHENTICATION & ACCESS CONTROL
-   =============================== */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    alert("Access denied. Please log in as an admin.");
-    window.location.href = "auth.html";
-    return;
-  }
+  const {
+    onAuthStateChanged,
+    signOut,
+  } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
+  const {
+    collection,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    doc,
+    query,
+    where,
+  } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js");
 
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("uid", "==", user.uid));
-  const snapshot = await getDocs(q);
+  const adminName = document.getElementById("admin-name");
+  const usersList = document.getElementById("users-list");
+  const bookingsList = document.getElementById("bookings-list");
 
-  if (snapshot.empty || snapshot.docs[0].data().role !== "admin") {
-    alert("Access restricted. Admins only.");
-    window.location.href = "dashboard.html";
-    return;
-  }
+  // Overview counters
+  const totalUsersEl = document.getElementById("total-users");
+  const totalTechsEl = document.getElementById("total-technicians");
+  const totalBookingsEl = document.getElementById("total-bookings");
+  const pendingBookingsEl = document.getElementById("pending-bookings");
 
-  const adminData = snapshot.docs[0].data();
-  adminNameEl.textContent = adminData.name || "Admin";
-  console.log("👑 Admin logged in:", adminData.email);
+  // ===== Protect admin route =====
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "auth.html";
+      return;
+    }
 
-  // Load dashboard data
-  loadOverviewStats();
-  loadUsers();
-  loadBookings();
-});
+    // Check if user is admin
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("uid", "==", user.uid));
+    const snapshot = await getDocs(q);
 
-/* ===============================
-   LOGOUT FUNCTIONALITY
-   =============================== */
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    alert("Logged out successfully.");
-    window.location.href = "auth.html";
+    if (snapshot.empty || snapshot.docs[0].data().role !== "admin") {
+      alert("Access denied. Admins only.");
+      window.location.href = "dashboard.html";
+      return;
+    }
+
+    const adminData = snapshot.docs[0].data();
+    adminName.textContent = adminData.name || "Admin";
+
+    loadDashboardData();
   });
-}
 
-/* ===============================
-   LOAD OVERVIEW STATISTICS
-   =============================== */
-async function loadOverviewStats() {
-  try {
-    const usersSnap = await getDocs(collection(db, "users"));
-    const bookingsSnap = await getDocs(collection(db, "bookings"));
-
-    const totalUsers = usersSnap.size;
-    const totalTechs = usersSnap.docs.filter(
-      (doc) => doc.data().role === "technician"
-    ).length;
-    const totalBookings = bookingsSnap.size;
-    const pendingBookings = bookingsSnap.docs.filter(
-      (doc) => doc.data().status === "pending"
-    ).length;
-
-    totalUsersEl.textContent = totalUsers;
-    totalTechsEl.textContent = totalTechs;
-    totalBookingsEl.textContent = totalBookings;
-    pendingBookingsEl.textContent = pendingBookings;
-  } catch (err) {
-    console.error("❌ Failed to load overview stats:", err);
+  // ===== Load all dashboard data =====
+  async function loadDashboardData() {
+    await loadUsers();
+    await loadBookings();
   }
-}
 
-/* ===============================
-   LOAD USERS TABLE
-   =============================== */
-async function loadUsers() {
-  try {
-    const usersSnap = await getDocs(collection(db, "users"));
-    usersListEl.innerHTML = "";
+  // ===== LOAD USERS + TECHNICIANS =====
+  async function loadUsers() {
+    const snapshot = await getDocs(collection(db, "users"));
+    let usersHTML = "";
 
-    usersSnap.forEach((docSnap) => {
-      const user = docSnap.data();
-      const row = document.createElement("tr");
+    let userCount = 0;
+    let techCount = 0;
 
-      row.innerHTML = `
-        <td>${user.name || "N/A"}</td>
-        <td>${user.email}</td>
-        <td>${user.role}</td>
-        <td>${user.profession || "-"}</td>
-        <td>${user.location?.city || "Unknown"}</td>
-        <td>
-          <button class="btn-action promote" data-id="${docSnap.id}" data-role="${user.role}">Toggle Role</button>
-          <button class="btn-action delete" data-id="${docSnap.id}">Delete</button>
-        </td>
+    snapshot.forEach((docSnap) => {
+      const u = docSnap.data();
+      if (u.role === "technician") techCount++;
+      else if (u.role === "user") userCount++;
+
+      usersHTML += `
+        <tr>
+          <td>${u.name || "N/A"}</td>
+          <td>${u.email}</td>
+          <td>${u.role}</td>
+          <td>${u.profession || "-"}</td>
+          <td>${u.location?.city || "Unknown"}</td>
+          <td>
+            <button class="delete-btn" data-id="${docSnap.id}" data-type="user">🗑️ Delete</button>
+          </td>
+        </tr>
       `;
-
-      usersListEl.appendChild(row);
     });
 
-    // Event listeners
-    document.querySelectorAll(".promote").forEach((btn) =>
-      btn.addEventListener("click", () =>
-        toggleRole(btn.dataset.id, btn.dataset.role)
-      )
-    );
-    document.querySelectorAll(".delete").forEach((btn) =>
-      btn.addEventListener("click", () => deleteUser(btn.dataset.id))
-    );
-  } catch (err) {
-    console.error("❌ Failed to load users:", err);
+    totalUsersEl.textContent = userCount;
+    totalTechsEl.textContent = techCount;
+    usersList.innerHTML = usersHTML || "<tr><td colspan='6'>No users found.</td></tr>";
+
+    // Bind delete buttons
+    document.querySelectorAll('.delete-btn[data-type="user"]').forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (confirm("Are you sure you want to delete this user?")) {
+          await deleteDoc(doc(db, "users", id));
+          alert("User deleted.");
+          loadUsers();
+        }
+      });
+    });
   }
-}
 
-/* ===== TOGGLE USER ROLE ===== */
-async function toggleRole(userId, currentRole) {
-  const newRole =
-    currentRole === "user"
-      ? "technician"
-      : currentRole === "technician"
-      ? "admin"
-      : "user";
+  // ===== LOAD BOOKINGS =====
+  async function loadBookings() {
+    const snapshot = await getDocs(collection(db, "bookings"));
+    let bookingsHTML = "";
 
-  if (!confirm(`Change role to "${newRole}"?`)) return;
+    let totalCount = 0;
+    let pendingCount = 0;
 
-  try {
-    await updateDoc(doc(db, "users", userId), { role: newRole });
-    alert(`Role updated to ${newRole}`);
-    loadUsers();
-    loadOverviewStats();
-  } catch (err) {
-    console.error("❌ Failed to update role:", err);
-  }
-}
-
-/* ===== DELETE USER ===== */
-async function deleteUser(userId) {
-  if (!confirm("Are you sure you want to delete this user?")) return;
-
-  try {
-    await deleteDoc(doc(db, "users", userId));
-    alert("User deleted successfully");
-    loadUsers();
-    loadOverviewStats();
-  } catch (err) {
-    console.error("❌ Failed to delete user:", err);
-  }
-}
-
-/* ===============================
-   LOAD BOOKINGS TABLE
-   =============================== */
-async function loadBookings() {
-  try {
-    const bookingsSnap = await getDocs(collection(db, "bookings"));
-    bookingsListEl.innerHTML = "";
-
-    bookingsSnap.forEach((docSnap) => {
+    snapshot.forEach((docSnap) => {
       const b = docSnap.data();
-      const row = document.createElement("tr");
+      totalCount++;
+      if (b.status === "pending") pendingCount++;
 
-      row.innerHTML = `
-        <td>${b.service}</td>
-        <td>${b.email}</td>
-        <td>${b.location || "Unknown"}</td>
-        <td>${b.status}</td>
-        <td>
-          <button class="btn-action approve" data-id="${docSnap.id}" data-status="${b.status}">Approve</button>
-          <button class="btn-action delete-booking" data-id="${docSnap.id}">Delete</button>
-        </td>
+      bookingsHTML += `
+        <tr>
+          <td>${b.service}</td>
+          <td>${b.email}</td>
+          <td>${b.location}</td>
+          <td>${b.status}</td>
+          <td>
+            <select class="status-select" data-id="${docSnap.id}">
+              <option value="pending" ${b.status === "pending" ? "selected" : ""}>Pending</option>
+              <option value="in-progress" ${b.status === "in-progress" ? "selected" : ""}>In Progress</option>
+              <option value="completed" ${b.status === "completed" ? "selected" : ""}>Completed</option>
+            </select>
+            <button class="delete-btn" data-id="${docSnap.id}" data-type="booking">🗑️</button>
+          </td>
+        </tr>
       `;
-
-      bookingsListEl.appendChild(row);
     });
 
-    // Event listeners
-    document.querySelectorAll(".approve").forEach((btn) =>
-      btn.addEventListener("click", () =>
-        updateBookingStatus(btn.dataset.id, btn.dataset.status)
-      )
-    );
-    document.querySelectorAll(".delete-booking").forEach((btn) =>
-      btn.addEventListener("click", () => deleteBooking(btn.dataset.id))
-    );
-  } catch (err) {
-    console.error("❌ Failed to load bookings:", err);
+    totalBookingsEl.textContent = totalCount;
+    pendingBookingsEl.textContent = pendingCount;
+    bookingsList.innerHTML = bookingsHTML || "<tr><td colspan='5'>No bookings found.</td></tr>";
+
+    // Status change
+    document.querySelectorAll(".status-select").forEach((select) => {
+      select.addEventListener("change", async () => {
+        const id = select.dataset.id;
+        const newStatus = select.value;
+        await updateDoc(doc(db, "bookings", id), { status: newStatus });
+        alert("Booking status updated.");
+        loadBookings();
+      });
+    });
+
+    // Delete booking
+    document.querySelectorAll('.delete-btn[data-type="booking"]').forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (confirm("Are you sure you want to delete this booking?")) {
+          await deleteDoc(doc(db, "bookings", id));
+          alert("Booking deleted.");
+          loadBookings();
+        }
+      });
+    });
   }
-}
 
-/* ===== UPDATE BOOKING STATUS ===== */
-async function updateBookingStatus(bookingId, currentStatus) {
-  const newStatus = currentStatus === "pending" ? "approved" : "completed";
-
-  if (!confirm(`Change booking status to "${newStatus}"?`)) return;
-
-  try {
-    await updateDoc(doc(db, "bookings", bookingId), { status: newStatus });
-    alert(`Booking marked as ${newStatus}`);
-    loadBookings();
-    loadOverviewStats();
-  } catch (err) {
-    console.error("❌ Failed to update booking status:", err);
+  // ===== LOGOUT =====
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      alert("You have been logged out.");
+      window.location.href = "auth.html";
+    });
   }
-}
 
-/* ===== DELETE BOOKING ===== */
-async function deleteBooking(bookingId) {
-  if (!confirm("Delete this booking?")) return;
-
-  try {
-    await deleteDoc(doc(db, "bookings", bookingId));
-    alert("Booking deleted successfully");
-    loadBookings();
-    loadOverviewStats();
-  } catch (err) {
-    console.error("❌ Failed to delete booking:", err);
+  // ===== NAVBAR TOGGLE =====
+  const menuToggle = document.getElementById("menu-toggle");
+  const navbar = document.getElementById("navbar");
+  if (menuToggle && navbar) {
+    menuToggle.addEventListener("click", () => {
+      navbar.classList.toggle("active");
+    });
   }
-}
+})();

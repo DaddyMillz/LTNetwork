@@ -1,0 +1,329 @@
+/* ===============================
+   TECHNICIAN PAGE STYLES (Updated)
+   =============================== */
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #fff;
+  color: #111;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== SEARCH SECTION ===== */
+.search-section {
+    position: relative;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: url("../assets/images/hero.jpg") center/cover no-repeat;
+  color: #fff;
+  min-height: 280px;
+  max-height: 360px;
+}
+
+
+.search-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.search-section h2 {
+  position: relative;
+  font-size: 1.6rem;
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.search-form {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-form input {
+  flex: 1 1 50px;     /* more reduction */
+  max-width: 220px;
+  padding: 0.45rem 0.6rem;
+  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.search-form input::placeholder {
+  color: #ccc;
+  font-size: 0.85;
+}
+
+.search-form input:focus {
+  background-color: #fff;
+  color: #000;
+  outline: none;
+}
+
+.btn-search {
+  background: #fff;
+  color: #000;
+  font-weight: 600;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-search:hover {
+  background: #111;
+  color: #fff;
+}
+
+/* ===== TECHNICIAN LIST SECTION ===== */
+.technician-section {
+  padding: 3rem 1.5rem 5rem;
+  background: #fafafa;
+  min-height: 60vh;
+}
+
+.technician-section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #000;
+}
+
+.technician-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* ===== TECHNICIAN CARD ===== */
+.technician-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.2rem;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.technician-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.technician-card h3 {
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.technician-card p {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 0.3rem 0;
+}
+
+.tech-profession {
+  font-weight: 600;
+  color: #000;
+}
+
+.tech-location {
+  color: #555;
+  font-style: italic;
+}
+
+/* ===== BOOK BUTTON ===== */
+.book-btn {
+  display: inline-block;
+  background: #000;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.6rem 1.3rem;
+  margin-top: 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.book-btn:hover {
+  background: #444;
+}
+
+/* ===== RESPONSIVENESS ===== */
+@media (max-width: 768px) {
+  .search-section{
+    padding: 2rem 1rem;
+  }
+  
+    .search-form {
+    flex-direction: column;
+    align-items: center;
+  }
+
+
+  .search-form input,
+  .btn-search {
+    width: 90%;
+    max-width: 320px;
+  }
+.search-form input {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.8rem;
+}
+  .technician-card {
+    padding: 1rem;
+  }
+}
+
+/* ===== FOOTER FIX ===== */
+footer {
+  background-color: #000;
+  color: #fff;
+  text-align: center;
+  padding: 1rem 0;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  border-top: 2px solid #111;
+}
+
+@media (max-height: 700px) {
+  footer {
+    position: static;
+  }
+}
+
+/* ===== TECHNICIAN DASHBOARD BOOKING ACTIONS ===== */
+.dashboard .booking-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard .booking-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.dashboard .booking-card h3 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.dashboard .booking-card .status {
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+}
+
+.dashboard .status.pending {
+  background: #fff8e1;
+  color: #b38b00;
+}
+.dashboard .status.accepted {
+  background: #e6ffed;
+  color: #007a3d;
+}
+.dashboard .status.completed {
+  background: #e6e6e6;
+  color: #333;
+}
+.dashboard .status.declined {
+  background: #ffe6e6;
+  color: #a30000;
+}
+
+/* ===== Action Buttons ===== */
+.dashboard .booking-card button {
+  display: inline-block;
+  margin-right: 8px;
+  margin-top: 0.6rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+/* Button Colors (black-white theme) */
+.dashboard .booking-card .accept-btn {
+  background: #111;
+  color: #fff;
+}
+.dashboard .booking-card .accept-btn:hover {
+  background: #333;
+}
+
+.dashboard .booking-card .decline-btn {
+  background: #ddd;
+  color: #111;
+}
+.dashboard .booking-card .decline-btn:hover {
+  background: #bbb;
+}
+
+.dashboard .booking-card .complete-btn {
+  background: #000;
+  color: #fff;
+}
+.dashboard .booking-card .complete-btn:hover {
+  background: #333;
+}
+
+/* ===== Responsive Layout ===== */
+@media (max-width: 600px) {
+  .dashboard .booking-card {
+    padding: 0.8rem;
+  }
+
+  .dashboard .booking-card button {
+    width: 100%;
+    margin: 0.3rem 0;
+  }
+}
+
+/* ===== FIX FOOTER POSITION ON ADMIN PAGE ===== */
+html, body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Keep footer at bottom on all screen sizes */
+footer {
+  margin-top: auto;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 0.9rem;
+}
+
+
