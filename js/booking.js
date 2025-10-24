@@ -1,11 +1,45 @@
-/* ===== BOOKING FORM ===== */
+/* ===============================
+   BOOKING PAGE SCRIPT
+   =============================== */
+
 document.addEventListener("DOMContentLoaded", async () => {
+  // ===== NAVBAR TOGGLE =====
+  const menuToggle = document.getElementById("menu-toggle");
+  const navbar = document.getElementById("navbar");
+  if (menuToggle && navbar) {
+    menuToggle.addEventListener("click", () => {
+      navbar.classList.toggle("active");
+    });
+  }
+
+  // ===== FIREBASE SETUP =====
+  const auth = window.firebaseAuth;
+  const db = window.firebaseDB;
+  if (!auth || !db) {
+    console.error("⚠️ Firebase not initialized properly.");
+    return;
+  }
+
+  // ===== ELEMENTS =====
   const bookingForm = document.getElementById("booking-form");
   const popup = document.getElementById("success-popup");
   const closePopup = document.getElementById("close-popup");
 
   if (!bookingForm) return;
 
+  // ===== GET URL PARAMS =====
+  const urlParams = new URLSearchParams(window.location.search);
+  const serviceParam = urlParams.get("service") || "General";
+  const technicianEmail = urlParams.get("techEmail") || null;
+  const technicianUID = urlParams.get("techUID") || null;
+
+  // ===== AUTO-FILL SERVICE TITLE =====
+  const serviceTitle = document.getElementById("service-title");
+  if (serviceTitle && serviceParam) {
+    serviceTitle.textContent = `Book ${serviceParam.charAt(0).toUpperCase() + serviceParam.slice(1)} Service`;
+  }
+
+  // ===== BOOKING HANDLER =====
   bookingForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -13,19 +47,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const phone = document.getElementById("book-phone").value.trim();
     const location = document.getElementById("book-location").value.trim();
     const details = document.getElementById("book-details").value.trim();
-    const serviceParam =
-      new URLSearchParams(window.location.search).get("service") || "General";
 
-    if (!name || !phone || !location) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    const auth = window.firebaseAuth;
-    const db = window.firebaseDB;
-
-    if (!auth || !db) {
-      alert("Firebase not initialized.");
+    if (!name || !phone || !location || !details) {
+      alert("Please fill all required fields.");
       return;
     }
 
@@ -41,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"
       );
 
-      // Save booking
       await addDoc(collection(db, "bookings"), {
         uid: user.uid,
         email: user.email,
@@ -50,21 +73,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         location,
         details,
         service: serviceParam,
-        status: "pending",
+        technicianUID,
+        technicianEmail,
+        status: technicianEmail ? "pending" : "pending-assignment",
         createdAt: serverTimestamp(),
       });
 
       console.log("✅ Booking saved successfully!");
-
-      // Reset form + show popup
       bookingForm.reset();
       if (popup) popup.classList.remove("hidden");
     } catch (err) {
-      console.error("❌ Booking save failed:", err);
-      alert("Something went wrong while saving your booking: " + err.message);
+      console.error("❌ Booking failed:", err);
+      alert("Something went wrong while saving your booking. Please try again.");
     }
   });
 
+  // ===== CLOSE POPUP =====
   if (closePopup) {
     closePopup.addEventListener("click", () => {
       popup.classList.add("hidden");

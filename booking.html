@@ -80,5 +80,27 @@
   import "./js/main.js";
   import "./js/booking.js";
 </script>
+
+<script>
+  // ===== NAVBAR TOGGLE FIX =====
+  document.addEventListener("DOMContentLoaded", () => {
+    const menuToggle = document.getElementById("menu-toggle");
+    const navbar = document.getElementById("navbar");
+
+    if (menuToggle && navbar) {
+      menuToggle.addEventListener("click", () => {
+        navbar.classList.toggle("active");
+      });
+    }
+
+    // Close menu when link is clicked (mobile fix)
+    document.querySelectorAll("#navbar a").forEach(link => {
+      link.addEventListener("click", () => {
+        navbar.classList.remove("active");
+      });
+    });
+  });
+</script>
+
 </body>
 </html>

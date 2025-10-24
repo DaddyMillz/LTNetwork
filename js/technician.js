@@ -1,19 +1,17 @@
-/* ===== TECHNICIAN PAGE SCRIPT ===== */
+/* ================================
+   TECHNICIAN PAGE SCRIPT (Fixed)
+================================ */
+
 console.log("📡 Technician page loaded");
 
 // ===== GEOLOCATION FUNCTION =====
 async function detectLocation() {
   return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      console.warn("❌ Geolocation not supported.");
-      return resolve(null);
-    }
+    if (!navigator.geolocation) return resolve(null);
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        console.log("📍 User Coordinates:", latitude, longitude);
-
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
@@ -26,15 +24,11 @@ async function detectLocation() {
             data.address.state ||
             "Unknown";
           resolve({ city, latitude, longitude });
-        } catch (err) {
-          console.warn("⚠️ Reverse geocoding failed:", err);
+        } catch {
           resolve(null);
         }
       },
-      (err) => {
-        console.warn("⚠️ Location access denied:", err.message);
-        resolve(null);
-      }
+      () => resolve(null)
     );
   });
 }
@@ -50,14 +44,13 @@ async function detectLocation() {
   const searchForm = document.getElementById("search-form");
   const searchProfession = document.getElementById("search-profession");
   const searchLocation = document.getElementById("search-location");
-  const sortBtn = document.getElementById("sort-nearby");
 
   let userLocation = null;
 
   // ===== DISTANCE CALCULATOR =====
-  function calculateDistance(lat1, lon1, lat2, lon2) {
+  function calcDist(lat1, lon1, lat2, lon2) {
     if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
-    const R = 6371; // km
+    const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
     const a =
@@ -69,8 +62,7 @@ async function detectLocation() {
   }
 
   // ===== LOAD TECHNICIANS =====
-  async function loadTechnicians(filterProfession = "", filterLocation = "", sortByNearest = false) {
-    if (!techList) return;
+  async function loadTechnicians(filterProf = "", filterLoc = "") {
     techList.innerHTML = `<p class="loading">Loading technicians...</p>`;
 
     try {
@@ -78,74 +70,68 @@ async function detectLocation() {
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        techList.innerHTML = `<p class="no-results">No technicians available yet.</p>`;
+        techList.innerHTML = `<p>No technicians available yet.</p>`;
         return;
       }
 
-      let results = [];
+      const results = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
         if (!data.profession) return;
 
-        const professionMatch = filterProfession
-          ? data.profession.toLowerCase().includes(filterProfession.toLowerCase())
+        const profMatch = filterProf
+          ? data.profession.toLowerCase().includes(filterProf.toLowerCase())
           : true;
 
-        const locationMatch = filterLocation
-          ? (data.location?.city || "").toLowerCase().includes(filterLocation.toLowerCase())
+        const locMatch = filterLoc
+          ? (data.location?.city || "")
+              .toLowerCase()
+              .includes(filterLoc.toLowerCase())
           : true;
 
-        if (professionMatch && locationMatch) {
+        if (profMatch && locMatch) {
           const techLat = data.location?.lat || null;
           const techLng = data.location?.lng || null;
           const distance = userLocation
-            ? calculateDistance(userLocation.latitude, userLocation.longitude, techLat, techLng)
+            ? calcDist(userLocation.latitude, userLocation.longitude, techLat, techLng)
             : null;
 
           results.push({
+            uid: data.uid || doc.id,
             name: data.name || "Unnamed Technician",
             profession: data.profession,
             city: data.location?.city || "Unknown",
             email: data.email,
-            distance: distance,
+            distance,
           });
         }
       });
 
       if (results.length === 0) {
-        techList.innerHTML = `<p class="no-results">No technicians found for your search.</p>`;
+        techList.innerHTML = `<p>No technicians found.</p>`;
         return;
-      }
-
-      // Sort by nearest distance if requested
-      if (sortByNearest && userLocation) {
-        results = results.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
       }
 
       techList.innerHTML = results
         .map(
-          (tech) => `
-          <div class="tech-card fade-in">
-            <h3>${tech.name}</h3>
-            <p><strong>Profession:</strong> ${tech.profession}</p>
-            <p><strong>Location:</strong> ${tech.city}</p>
+          (t) => `
+          <div class="technician-card fade-in">
+            <h3>${t.name}</h3>
+            <p><strong>Profession:</strong> ${t.profession}</p>
+            <p><strong>Location:</strong> ${t.city}</p>
             ${
-              tech.distance
-                ? `<p><strong>Distance:</strong> ${tech.distance.toFixed(1)} km away</p>`
+              t.distance
+                ? `<p><strong>Distance:</strong> ${t.distance.toFixed(1)} km away</p>`
                 : ""
             }
-            <p><strong>Contact:</strong> ${tech.email}</p>
-            <a href="booking.html?service=${encodeURIComponent(
-              tech.profession
-            )}" class="btn-book">Book Now</a>
+            <p><strong>Email:</strong> ${t.email}</p>
+          <a href="booking.html?service=${encodeURIComponent(t.profession)}&techEmail=${encodeURIComponent(t.email)}&techUID=${encodeURIComponent(t.uid)}" class="btn-book">Book Now</a>
           </div>`
         )
         .join("");
-
-      console.log(`✅ Loaded ${results.length} technicians`);
     } catch (err) {
       console.error("❌ Error loading technicians:", err);
-      techList.innerHTML = `<p class="error">Failed to load technicians. Please try again later.</p>`;
+      techList.innerHTML = `<p>Failed to load technicians. Please try again.</p>`;
     }
   }
 
@@ -157,23 +143,11 @@ async function detectLocation() {
   if (searchForm) {
     searchForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const profession = searchProfession.value.trim();
-      const location = searchLocation.value.trim();
-      await loadTechnicians(profession, location);
+      await loadTechnicians(searchProfession.value.trim(), searchLocation.value.trim());
     });
   }
 
-  // ===== SORT BY NEAREST BUTTON =====
-  if (sortBtn) {
-    sortBtn.addEventListener("click", async () => {
-      if (!userLocation) {
-        userLocation = await detectLocation();
-      }
-      await loadTechnicians("", "", true);
-    });
-  }
-
-  // ===== MOBILE MENU TOGGLE =====
+  // ===== NAVBAR TOGGLE =====
   const menuToggle = document.getElementById("menu-toggle");
   const navbar = document.getElementById("navbar");
   if (menuToggle && navbar) {

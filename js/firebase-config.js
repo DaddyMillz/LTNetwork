@@ -24,3 +24,6 @@ console.log("Firebase initialized ✅", app);
 window.firebaseApp = app;
 window.firebaseAuth = auth;
 window.firebaseDB = db;
+
+export { app, auth, db };
+

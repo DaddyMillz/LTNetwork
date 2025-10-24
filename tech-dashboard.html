@@ -5,22 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Technician Dashboard - Local Technician Network</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/technician.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+
   <!-- ===== HEADER ===== -->
-  <header class="header dashboard-header">
+  <header class="header">
     <div class="container nav-container">
       <div class="logo">
-        <img src="./assets/images/logo.jpg" alt="logo">
-        <h1>Technician Panel</h1>
+        <img src="./assets/images/logo.jpg" alt="logo" />
+        <h1>Technician Dashboard</h1>
       </div>
 
       <nav class="navbar" id="navbar">
         <ul>
           <li><a href="index.html">Home</a></li>
-          <li><a href="tech-dashboard.html" class="active">Dashboard</a></li>
-          <li><button id="logout-btn" class="btn-logout">Logout</button></li>
+          <li><a href="technicians.html">Technicians</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="dashboard.html">User Dashboard</a></li>
+          <li><a href="#" id="logout-btn">Logout</a></li>
         </ul>
       </nav>
 
@@ -28,24 +32,55 @@
     </div>
   </header>
 
-  <!-- ===== MAIN DASHBOARD ===== -->
+  <!-- ===== MAIN DASHBOARD SECTION ===== -->
   <section class="dashboard">
     <div class="container">
-      <h2 id="tech-greeting">👋 Welcome, Technician!</h2>
-      <p class="section-desc">Pending service requests:</p>
-      <div id="job-list" class="booking-list"></div>
+      <h2>My Bookings</h2>
+      <p class="section-desc">View and manage your assigned bookings below.</p>
+
+      <div id="booking-list" class="booking-list">
+        <!-- Bookings will appear here dynamically -->
+      </div>
     </div>
   </section>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="dashboard-footer">
+  <footer>
     <p>&copy; 2025 Local Technician Network. All rights reserved.</p>
   </footer>
 
-  <!-- ===== SCRIPTS ===== -->
-  <script type="module">
-    import "./js/firebase-config.js";
-    import "./js/main.js";
-  </script>
+ <!-- ===== SCRIPTS ===== -->
+<script type="module">
+  import "./js/firebase-config.js";
+  import "./js/tech-dashboard.js";
+
+  // --- Navbar toggle fix ---
+  const menuToggle = document.getElementById("menu-toggle");
+  const navbar = document.getElementById("navbar");
+  if (menuToggle && navbar) {
+    menuToggle.addEventListener("click", () => {
+      navbar.classList.toggle("active");
+    });
+  }
+
+  // --- Logout fix ---
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+  const logoutBtn = document.getElementById("logout-btn");
+  const auth = getAuth();
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await signOut(auth);
+        alert("Logged out successfully!");
+        window.location.href = "auth.html";
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
+    });
+  }
+</script>
+
+
 </body>
 </html>
