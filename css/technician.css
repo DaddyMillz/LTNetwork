@@ -151,7 +151,7 @@ body {
 }
 
 /* ===== BOOK BUTTON ===== */
-.book-btn {
+.btn-book{
   display: inline-block;
   background: #000;
   color: #fff;
